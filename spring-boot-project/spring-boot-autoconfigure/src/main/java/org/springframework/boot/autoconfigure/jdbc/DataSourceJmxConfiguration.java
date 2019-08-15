@@ -42,8 +42,7 @@ import org.springframework.jmx.export.MBeanExporter;
  * @author Stephane Nicoll
  */
 @Configuration(proxyBeanMethods = false)
-@ConditionalOnProperty(prefix = "spring.jmx", name = "enabled", havingValue = "true",
-		matchIfMissing = true)
+@ConditionalOnProperty(prefix = "spring.jmx", name = "enabled", havingValue = "true", matchIfMissing = true)
 class DataSourceJmxConfiguration {
 
 	private static final Log logger = LogFactory.getLog(DataSourceJmxConfiguration.class);
@@ -63,12 +62,10 @@ class DataSourceJmxConfiguration {
 		}
 
 		@PostConstruct
-		public void validateMBeans() {
-			HikariDataSource hikariDataSource = DataSourceUnwrapper
-					.unwrap(this.dataSource, HikariDataSource.class);
+		void validateMBeans() {
+			HikariDataSource hikariDataSource = DataSourceUnwrapper.unwrap(this.dataSource, HikariDataSource.class);
 			if (hikariDataSource != null && hikariDataSource.isRegisterMbeans()) {
-				this.mBeanExporter
-						.ifUnique((exporter) -> exporter.addExcludedBean("dataSource"));
+				this.mBeanExporter.ifUnique((exporter) -> exporter.addExcludedBean("dataSource"));
 			}
 		}
 
@@ -82,9 +79,8 @@ class DataSourceJmxConfiguration {
 
 		@Bean
 		@ConditionalOnMissingBean(name = "dataSourceMBean")
-		public Object dataSourceMBean(DataSource dataSource) {
-			DataSourceProxy dataSourceProxy = DataSourceUnwrapper.unwrap(dataSource,
-					DataSourceProxy.class);
+		Object dataSourceMBean(DataSource dataSource) {
+			DataSourceProxy dataSourceProxy = DataSourceUnwrapper.unwrap(dataSource, DataSourceProxy.class);
 			if (dataSourceProxy != null) {
 				try {
 					return dataSourceProxy.createPool().getJmxPool();

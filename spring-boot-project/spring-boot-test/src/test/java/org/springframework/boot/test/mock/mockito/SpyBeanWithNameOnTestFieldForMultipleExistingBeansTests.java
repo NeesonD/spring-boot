@@ -36,29 +36,28 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Andy Wilkinson
  */
 @ExtendWith(SpringExtension.class)
-public class SpyBeanWithNameOnTestFieldForMultipleExistingBeansTests {
+class SpyBeanWithNameOnTestFieldForMultipleExistingBeansTests {
 
 	@SpyBean(name = "two")
 	private SimpleExampleStringGenericService spy;
 
 	@Test
-	public void testSpying() {
+	void testSpying() {
 		MockingDetails mockingDetails = Mockito.mockingDetails(this.spy);
 		assertThat(mockingDetails.isSpy()).isTrue();
-		assertThat(mockingDetails.getMockCreationSettings().getMockName().toString())
-				.isEqualTo("two");
+		assertThat(mockingDetails.getMockCreationSettings().getMockName().toString()).isEqualTo("two");
 	}
 
 	@Configuration(proxyBeanMethods = false)
 	static class Config {
 
 		@Bean
-		public SimpleExampleStringGenericService one() {
+		SimpleExampleStringGenericService one() {
 			return new SimpleExampleStringGenericService("one");
 		}
 
 		@Bean
-		public SimpleExampleStringGenericService two() {
+		SimpleExampleStringGenericService two() {
 			return new SimpleExampleStringGenericService("two");
 		}
 

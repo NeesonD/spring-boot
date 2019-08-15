@@ -27,29 +27,26 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Tests for {@link MissingRequiredConfigurationFailureAnalyzer}.
  *
  * @author Andy Wilkinson
  */
-public class MissingRequiredConfigurationFailureAnalyzerTests {
+class MissingRequiredConfigurationFailureAnalyzerTests {
 
 	@Test
-	public void analyzesMissingRequiredConfiguration() {
+	void analyzesMissingRequiredConfiguration() {
 		FailureAnalysis analysis = new MissingRequiredConfigurationFailureAnalyzer()
 				.analyze(createFailure(MissingAccountIdConfiguration.class));
 		assertThat(analysis).isNotNull();
-		assertThat(analysis.getDescription())
-				.isEqualTo("accountId must be set to report metrics to New Relic.");
-		assertThat(analysis.getAction()).isEqualTo(
-				"Update your application to provide the missing configuration.");
+		assertThat(analysis.getDescription()).isEqualTo("accountId must be set to report metrics to New Relic.");
+		assertThat(analysis.getAction()).isEqualTo("Update your application to provide the missing configuration.");
 	}
 
 	private Exception createFailure(Class<?> configuration) {
-		try (ConfigurableApplicationContext context = new AnnotationConfigApplicationContext(
-				configuration)) {
+		try (ConfigurableApplicationContext context = new AnnotationConfigApplicationContext(configuration)) {
 			fail("Expected failure did not occur");
 			return null;
 		}
@@ -62,7 +59,7 @@ public class MissingRequiredConfigurationFailureAnalyzerTests {
 	static class MissingAccountIdConfiguration {
 
 		@Bean
-		public NewRelicMeterRegistry meterRegistry() {
+		NewRelicMeterRegistry meterRegistry() {
 			return new NewRelicMeterRegistry((key) -> null, Clock.SYSTEM);
 		}
 

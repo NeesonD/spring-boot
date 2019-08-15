@@ -43,10 +43,10 @@ import org.springframework.data.util.Streamable;
  * @author Phillip Webb
  * @author Dave Syer
  * @author Oliver Gierke
+ * @since 1.0.0
  */
 public abstract class AbstractRepositoryConfigurationSourceSupport
-		implements ImportBeanDefinitionRegistrar, BeanFactoryAware, ResourceLoaderAware,
-		EnvironmentAware {
+		implements ImportBeanDefinitionRegistrar, BeanFactoryAware, ResourceLoaderAware, EnvironmentAware {
 
 	private ResourceLoader resourceLoader;
 
@@ -55,20 +55,18 @@ public abstract class AbstractRepositoryConfigurationSourceSupport
 	private Environment environment;
 
 	@Override
-	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata,
-			BeanDefinitionRegistry registry, BeanNameGenerator importBeanNameGenerator) {
+	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry,
+			BeanNameGenerator importBeanNameGenerator) {
 		RepositoryConfigurationDelegate delegate = new RepositoryConfigurationDelegate(
-				getConfigurationSource(registry, importBeanNameGenerator),
-				this.resourceLoader, this.environment);
+				getConfigurationSource(registry, importBeanNameGenerator), this.resourceLoader, this.environment);
 		delegate.registerRepositoriesIn(registry, getRepositoryConfigurationExtension());
 	}
 
-	private AnnotationRepositoryConfigurationSource getConfigurationSource(
-			BeanDefinitionRegistry registry, BeanNameGenerator importBeanNameGenerator) {
+	private AnnotationRepositoryConfigurationSource getConfigurationSource(BeanDefinitionRegistry registry,
+			BeanNameGenerator importBeanNameGenerator) {
 		AnnotationMetadata metadata = AnnotationMetadata.introspect(getConfiguration());
-		return new AutoConfiguredAnnotationRepositoryConfigurationSource(metadata,
-				getAnnotation(), this.resourceLoader, this.environment, registry,
-				importBeanNameGenerator) {
+		return new AutoConfiguredAnnotationRepositoryConfigurationSource(metadata, getAnnotation(), this.resourceLoader,
+				this.environment, registry, importBeanNameGenerator) {
 		};
 	}
 
@@ -125,9 +123,8 @@ public abstract class AbstractRepositoryConfigurationSourceSupport
 			extends AnnotationRepositoryConfigurationSource {
 
 		AutoConfiguredAnnotationRepositoryConfigurationSource(AnnotationMetadata metadata,
-				Class<? extends Annotation> annotation, ResourceLoader resourceLoader,
-				Environment environment, BeanDefinitionRegistry registry,
-				BeanNameGenerator generator) {
+				Class<? extends Annotation> annotation, ResourceLoader resourceLoader, Environment environment,
+				BeanDefinitionRegistry registry, BeanNameGenerator generator) {
 			super(metadata, annotation, resourceLoader, environment, registry, generator);
 		}
 

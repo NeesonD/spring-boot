@@ -57,8 +57,7 @@ public class HealthIndicatorAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(HealthAggregator.class)
-	public OrderedHealthAggregator healthAggregator(
-			HealthIndicatorProperties properties) {
+	public OrderedHealthAggregator healthAggregator(HealthIndicatorProperties properties) {
 		OrderedHealthAggregator healthAggregator = new OrderedHealthAggregator();
 		if (properties.getOrder() != null) {
 			healthAggregator.setStatusOrder(properties.getOrder());
@@ -68,8 +67,7 @@ public class HealthIndicatorAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(HealthIndicatorRegistry.class)
-	public HealthIndicatorRegistry healthIndicatorRegistry(
-			ApplicationContext applicationContext) {
+	public HealthIndicatorRegistry healthIndicatorRegistry(ApplicationContext applicationContext) {
 		return HealthIndicatorRegistryBeans.get(applicationContext);
 	}
 
@@ -79,12 +77,11 @@ public class HealthIndicatorAutoConfiguration {
 
 		@Bean
 		@ConditionalOnMissingBean
-		public ReactiveHealthIndicatorRegistry reactiveHealthIndicatorRegistry(
+		ReactiveHealthIndicatorRegistry reactiveHealthIndicatorRegistry(
 				Map<String, ReactiveHealthIndicator> reactiveHealthIndicators,
 				Map<String, HealthIndicator> healthIndicators) {
 			return new ReactiveHealthIndicatorRegistryFactory()
-					.createReactiveHealthIndicatorRegistry(reactiveHealthIndicators,
-							healthIndicators);
+					.createReactiveHealthIndicatorRegistry(reactiveHealthIndicators, healthIndicators);
 		}
 
 	}

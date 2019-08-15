@@ -80,8 +80,7 @@ class OutputCaptureTests {
 
 	@Test
 	void popWhenEmptyThrowsException() {
-		assertThatExceptionOfType(NoSuchElementException.class)
-				.isThrownBy(this.output::pop);
+		assertThatExceptionOfType(NoSuchElementException.class).isThrownBy(this.output::pop);
 	}
 
 	@Test
@@ -164,7 +163,7 @@ class OutputCaptureTests {
 		assertThat(this.output.getOut()).isEqualTo("AC");
 	}
 
-	private static class TestPrintStream extends PrintStream {
+	static class TestPrintStream extends PrintStream {
 
 		TestPrintStream() {
 			super(new ByteArrayOutputStream());

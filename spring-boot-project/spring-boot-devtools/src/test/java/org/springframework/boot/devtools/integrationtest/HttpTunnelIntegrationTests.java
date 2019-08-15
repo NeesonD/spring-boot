@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.devtools.integrationtest.HttpTunnelIntegrationTests.TunnelConfiguration.TestTunnelClient;
@@ -59,35 +59,31 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * @author Phillip Webb
  */
-public class HttpTunnelIntegrationTests {
+class HttpTunnelIntegrationTests {
 
 	@Test
-	public void httpServerDirect() {
+	void httpServerDirect() {
 		AnnotationConfigServletWebServerApplicationContext context = new AnnotationConfigServletWebServerApplicationContext();
 		context.register(ServerConfiguration.class);
 		context.refresh();
 		String url = "http://localhost:" + context.getWebServer().getPort() + "/hello";
-		ResponseEntity<String> entity = new TestRestTemplate().getForEntity(url,
-				String.class);
+		ResponseEntity<String> entity = new TestRestTemplate().getForEntity(url, String.class);
 		assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.OK);
 		assertThat(entity.getBody()).isEqualTo("Hello World");
 		context.close();
 	}
 
 	@Test
-	public void viaTunnel() {
+	void viaTunnel() {
 		AnnotationConfigServletWebServerApplicationContext serverContext = new AnnotationConfigServletWebServerApplicationContext();
 		serverContext.register(ServerConfiguration.class);
 		serverContext.refresh();
 		AnnotationConfigApplicationContext tunnelContext = new AnnotationConfigApplicationContext();
-		TestPropertyValues.of("server.port:" + serverContext.getWebServer().getPort())
-				.applyTo(tunnelContext);
+		TestPropertyValues.of("server.port:" + serverContext.getWebServer().getPort()).applyTo(tunnelContext);
 		tunnelContext.register(TunnelConfiguration.class);
 		tunnelContext.refresh();
-		String url = "http://localhost:"
-				+ tunnelContext.getBean(TestTunnelClient.class).port + "/hello";
-		ResponseEntity<String> entity = new TestRestTemplate().getForEntity(url,
-				String.class);
+		String url = "http://localhost:" + tunnelContext.getBean(TestTunnelClient.class).port + "/hello";
+		ResponseEntity<String> entity = new TestRestTemplate().getForEntity(url, String.class);
 		assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.OK);
 		assertThat(entity.getBody()).isEqualTo("Hello World");
 		serverContext.close();
@@ -99,28 +95,26 @@ public class HttpTunnelIntegrationTests {
 	static class ServerConfiguration {
 
 		@Bean
-		public ServletWebServerFactory container() {
+		ServletWebServerFactory container() {
 			return new TomcatServletWebServerFactory(0);
 		}
 
 		@Bean
-		public DispatcherServlet dispatcherServlet() {
+		DispatcherServlet dispatcherServlet() {
 			return new DispatcherServlet();
 		}
 
 		@Bean
-		public MyController myController() {
+		MyController myController() {
 			return new MyController();
 		}
 
 		@Bean
-		public DispatcherFilter filter(
-				AnnotationConfigServletWebServerApplicationContext context) {
+		DispatcherFilter filter(AnnotationConfigServletWebServerApplicationContext context) {
 			TargetServerConnection connection = new SocketTargetServerConnection(
 					() -> context.getWebServer().getPort());
 			HttpTunnelServer server = new HttpTunnelServer(connection);
-			HandlerMapper mapper = new UrlHandlerMapper("/httptunnel",
-					new HttpTunnelServerHandler(server));
+			HandlerMapper mapper = new UrlHandlerMapper("/httptunnel", new HttpTunnelServerHandler(server));
 			Collection<HandlerMapper> mappers = Collections.singleton(mapper);
 			Dispatcher dispatcher = new Dispatcher(AccessManager.PERMIT_ALL, mappers);
 			return new DispatcherFilter(dispatcher);
@@ -132,10 +126,9 @@ public class HttpTunnelIntegrationTests {
 	static class TunnelConfiguration {
 
 		@Bean
-		public TunnelClient tunnelClient(@Value("${server.port}") int serverPort) {
+		TunnelClient tunnelClient(@Value("${server.port}") int serverPort) {
 			String url = "http://localhost:" + serverPort + "/httptunnel";
-			TunnelConnection connection = new HttpTunnelConnection(url,
-					new SimpleClientHttpRequestFactory());
+			TunnelConnection connection = new HttpTunnelConnection(url, new SimpleClientHttpRequestFactory());
 			return new TestTunnelClient(0, connection);
 		}
 
@@ -161,7 +154,7 @@ public class HttpTunnelIntegrationTests {
 	static class MyController {
 
 		@RequestMapping("/hello")
-		public String hello() {
+		String hello() {
 			return "Hello World";
 		}
 

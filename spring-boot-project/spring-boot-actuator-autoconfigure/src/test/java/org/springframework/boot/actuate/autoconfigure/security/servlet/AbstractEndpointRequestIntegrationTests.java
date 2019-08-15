@@ -47,12 +47,12 @@ import static org.mockito.Mockito.mock;
  *
  * @author Madhura Bhave
  */
-public abstract class AbstractEndpointRequestIntegrationTests {
+abstract class AbstractEndpointRequestIntegrationTests {
 
 	protected abstract WebApplicationContextRunner getContextRunner();
 
 	@Test
-	public void toEndpointShouldMatch() {
+	void toEndpointShouldMatch() {
 		getContextRunner().run((context) -> {
 			WebTestClient webTestClient = getWebTestClient(context);
 			webTestClient.get().uri("/actuator/e1").exchange().expectStatus().isOk();
@@ -60,23 +60,18 @@ public abstract class AbstractEndpointRequestIntegrationTests {
 	}
 
 	@Test
-	public void toAllEndpointsShouldMatch() {
-		getContextRunner()
-				.withInitializer(
-						new ConditionEvaluationReportLoggingListener(LogLevel.INFO))
-				.withPropertyValues("spring.security.user.password=password")
-				.run((context) -> {
+	void toAllEndpointsShouldMatch() {
+		getContextRunner().withInitializer(new ConditionEvaluationReportLoggingListener(LogLevel.INFO))
+				.withPropertyValues("spring.security.user.password=password").run((context) -> {
 					WebTestClient webTestClient = getWebTestClient(context);
-					webTestClient.get().uri("/actuator/e2").exchange().expectStatus()
-							.isUnauthorized();
-					webTestClient.get().uri("/actuator/e2")
-							.header("Authorization", getBasicAuth()).exchange()
+					webTestClient.get().uri("/actuator/e2").exchange().expectStatus().isUnauthorized();
+					webTestClient.get().uri("/actuator/e2").header("Authorization", getBasicAuth()).exchange()
 							.expectStatus().isOk();
 				});
 	}
 
 	@Test
-	public void toLinksShouldMatch() {
+	void toLinksShouldMatch() {
 		getContextRunner().run((context) -> {
 			WebTestClient webTestClient = getWebTestClient(context);
 			webTestClient.get().uri("/actuator").exchange().expectStatus().isOk();
@@ -85,9 +80,7 @@ public abstract class AbstractEndpointRequestIntegrationTests {
 	}
 
 	protected WebTestClient getWebTestClient(AssertableWebApplicationContext context) {
-		int port = context
-				.getSourceApplicationContext(
-						AnnotationConfigServletWebServerApplicationContext.class)
+		int port = context.getSourceApplicationContext(AnnotationConfigServletWebServerApplicationContext.class)
 				.getWebServer().getPort();
 		return WebTestClient.bindToServer().baseUrl("http://localhost:" + port).build();
 	}
@@ -100,22 +93,22 @@ public abstract class AbstractEndpointRequestIntegrationTests {
 	static class BaseConfiguration {
 
 		@Bean
-		public TestEndpoint1 endpoint1() {
+		TestEndpoint1 endpoint1() {
 			return new TestEndpoint1();
 		}
 
 		@Bean
-		public TestEndpoint2 endpoint2() {
+		TestEndpoint2 endpoint2() {
 			return new TestEndpoint2();
 		}
 
 		@Bean
-		public TestEndpoint3 endpoint3() {
+		TestEndpoint3 endpoint3() {
 			return new TestEndpoint3();
 		}
 
 		@Bean
-		public PathMappedEndpoints pathMappedEndpoints() {
+		PathMappedEndpoints pathMappedEndpoints() {
 			List<ExposableEndpoint<?>> endpoints = new ArrayList<>();
 			endpoints.add(mockEndpoint("e1"));
 			endpoints.add(mockEndpoint("e2"));
@@ -136,7 +129,7 @@ public abstract class AbstractEndpointRequestIntegrationTests {
 	static class TestEndpoint1 {
 
 		@ReadOperation
-		public Object getAll() {
+		Object getAll() {
 			return "endpoint 1";
 		}
 
@@ -146,7 +139,7 @@ public abstract class AbstractEndpointRequestIntegrationTests {
 	static class TestEndpoint2 {
 
 		@ReadOperation
-		public Object getAll() {
+		Object getAll() {
 			return "endpoint 2";
 		}
 
@@ -156,14 +149,13 @@ public abstract class AbstractEndpointRequestIntegrationTests {
 	static class TestEndpoint3 {
 
 		@ReadOperation
-		public Object getAll() {
+		Object getAll() {
 			return null;
 		}
 
 	}
 
-	public interface TestPathMappedEndpoint
-			extends ExposableEndpoint<Operation>, PathMappedEndpoint {
+	public interface TestPathMappedEndpoint extends ExposableEndpoint<Operation>, PathMappedEndpoint {
 
 	}
 
@@ -171,17 +163,20 @@ public abstract class AbstractEndpointRequestIntegrationTests {
 	static class SecurityConfiguration {
 
 		@Bean
-		public WebSecurityConfigurerAdapter webSecurityConfigurerAdapter() {
+		WebSecurityConfigurerAdapter webSecurityConfigurerAdapter() {
 			return new WebSecurityConfigurerAdapter() {
+
 				@Override
 				protected void configure(HttpSecurity http) throws Exception {
-					http.authorizeRequests().requestMatchers(EndpointRequest.toLinks())
-							.permitAll()
-							.requestMatchers(EndpointRequest.to(TestEndpoint1.class))
-							.permitAll().requestMatchers(EndpointRequest.toAnyEndpoint())
-							.authenticated().anyRequest().hasRole("ADMIN").and()
-							.httpBasic();
+					http.authorizeRequests((requests) -> {
+						requests.requestMatchers(EndpointRequest.toLinks()).permitAll();
+						requests.requestMatchers(EndpointRequest.to(TestEndpoint1.class)).permitAll();
+						requests.requestMatchers(EndpointRequest.toAnyEndpoint()).authenticated();
+						requests.anyRequest().hasRole("ADMIN");
+					});
+					http.httpBasic();
 				}
+
 			};
 		}
 

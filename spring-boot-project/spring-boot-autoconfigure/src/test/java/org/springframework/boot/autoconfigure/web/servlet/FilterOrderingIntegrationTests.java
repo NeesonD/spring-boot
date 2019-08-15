@@ -30,6 +30,7 @@ import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoCon
 import org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.autoconfigure.session.SessionAutoConfiguration;
+import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.boot.testsupport.web.servlet.MockServletWebServer.RegisteredFilter;
 import org.springframework.boot.web.server.WebServerFactoryCustomizerBeanPostProcessor;
 import org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext;
@@ -54,23 +55,22 @@ import static org.mockito.Mockito.mock;
  * @author Andy Wilkinson
  * @author Eddú Meléndez
  */
-public class FilterOrderingIntegrationTests {
+class FilterOrderingIntegrationTests {
 
 	private AnnotationConfigServletWebServerApplicationContext context;
 
 	@AfterEach
-	public void cleanup() {
+	void cleanup() {
 		if (this.context != null) {
 			this.context.close();
 		}
 	}
 
 	@Test
-	public void testFilterOrdering() {
+	void testFilterOrdering() {
 		load();
-		List<RegisteredFilter> registeredFilters = this.context
-				.getBean(MockServletWebServerFactory.class).getWebServer()
-				.getRegisteredFilters();
+		List<RegisteredFilter> registeredFilters = this.context.getBean(MockServletWebServerFactory.class)
+				.getWebServer().getRegisteredFilters();
 		List<Filter> filters = new ArrayList<>(registeredFilters.size());
 		for (RegisteredFilter registeredFilter : registeredFilters) {
 			filters.add(registeredFilter.getFilter());
@@ -86,13 +86,11 @@ public class FilterOrderingIntegrationTests {
 
 	private void load() {
 		this.context = new AnnotationConfigServletWebServerApplicationContext();
-		this.context.register(MockWebServerConfiguration.class,
-				TestSessionConfiguration.class, TestRedisConfiguration.class,
-				WebMvcAutoConfiguration.class, SecurityAutoConfiguration.class,
-				SessionAutoConfiguration.class,
-				HttpMessageConvertersAutoConfiguration.class,
-				PropertyPlaceholderAutoConfiguration.class,
-				HttpEncodingAutoConfiguration.class);
+		this.context.register(MockWebServerConfiguration.class, TestSessionConfiguration.class,
+				TestRedisConfiguration.class, WebMvcAutoConfiguration.class, SecurityAutoConfiguration.class,
+				SessionAutoConfiguration.class, HttpMessageConvertersAutoConfiguration.class,
+				PropertyPlaceholderAutoConfiguration.class, HttpEncodingAutoConfiguration.class);
+		TestPropertyValues.of("spring.mvc.hiddenmethod.filter.enabled:true").applyTo(this.context);
 		this.context.refresh();
 	}
 
@@ -100,12 +98,12 @@ public class FilterOrderingIntegrationTests {
 	static class MockWebServerConfiguration {
 
 		@Bean
-		public MockServletWebServerFactory webServerFactory() {
+		MockServletWebServerFactory webServerFactory() {
 			return new MockServletWebServerFactory();
 		}
 
 		@Bean
-		public WebServerFactoryCustomizerBeanPostProcessor ServletWebServerCustomizerBeanPostProcessor() {
+		WebServerFactoryCustomizerBeanPostProcessor ServletWebServerCustomizerBeanPostProcessor() {
 			return new WebServerFactoryCustomizerBeanPostProcessor();
 		}
 
@@ -116,7 +114,7 @@ public class FilterOrderingIntegrationTests {
 	static class TestSessionConfiguration {
 
 		@Bean
-		public MapSessionRepository mapSessionRepository() {
+		MapSessionRepository mapSessionRepository() {
 			return new MapSessionRepository(new ConcurrentHashMap<>());
 		}
 
@@ -126,7 +124,7 @@ public class FilterOrderingIntegrationTests {
 	static class TestRedisConfiguration {
 
 		@Bean
-		public RedisConnectionFactory redisConnectionFactory() {
+		RedisConnectionFactory redisConnectionFactory() {
 			RedisConnectionFactory connectionFactory = mock(RedisConnectionFactory.class);
 			RedisConnection connection = mock(RedisConnection.class);
 			given(connectionFactory.getConnection()).willReturn(connection);

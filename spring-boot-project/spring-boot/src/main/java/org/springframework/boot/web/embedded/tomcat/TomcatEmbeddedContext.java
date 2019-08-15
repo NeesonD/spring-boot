@@ -60,7 +60,7 @@ class TomcatEmbeddedContext extends StandardContext {
 		super.setManager(manager);
 	}
 
-	public void deferredLoadOnStartup() throws LifecycleException {
+	void deferredLoadOnStartup() throws LifecycleException {
 		doWithThreadContextClassLoader(getLoader().getClassLoader(),
 				() -> getLoadOnStartupWrappers(findChildren()).forEach(this::load));
 	}
@@ -83,8 +83,7 @@ class TomcatEmbeddedContext extends StandardContext {
 			wrapper.load();
 		}
 		catch (ServletException ex) {
-			String message = sm.getString("standardContext.loadOnStartup.loadException",
-					getName(), wrapper.getName());
+			String message = sm.getString("standardContext.loadOnStartup.loadException", getName(), wrapper.getName());
 			if (getComputedFailCtxIfServletStartFails()) {
 				throw new WebServerException(message, ex);
 			}
@@ -102,8 +101,8 @@ class TomcatEmbeddedContext extends StandardContext {
 	 * @param code the code to run
 	 */
 	private void doWithThreadContextClassLoader(ClassLoader classLoader, Runnable code) {
-		ClassLoader existingLoader = (classLoader != null)
-				? ClassUtils.overrideThreadContextClassLoader(classLoader) : null;
+		ClassLoader existingLoader = (classLoader != null) ? ClassUtils.overrideThreadContextClassLoader(classLoader)
+				: null;
 		try {
 			code.run();
 		}
@@ -114,11 +113,11 @@ class TomcatEmbeddedContext extends StandardContext {
 		}
 	}
 
-	public void setStarter(TomcatStarter starter) {
+	void setStarter(TomcatStarter starter) {
 		this.starter = starter;
 	}
 
-	public TomcatStarter getStarter() {
+	TomcatStarter getStarter() {
 		return this.starter;
 	}
 

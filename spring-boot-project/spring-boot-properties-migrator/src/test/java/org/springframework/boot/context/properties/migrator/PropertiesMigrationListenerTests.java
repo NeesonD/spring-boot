@@ -16,12 +16,13 @@
 
 package org.springframework.boot.context.properties.migrator;
 
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.test.system.OutputCaptureRule;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Configuration;
 
@@ -32,25 +33,22 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * @author Stephane Nicoll
  */
-public class PropertiesMigrationListenerTests {
-
-	@Rule
-	public final OutputCaptureRule output = new OutputCaptureRule();
+@ExtendWith(OutputCaptureExtension.class)
+class PropertiesMigrationListenerTests {
 
 	private ConfigurableApplicationContext context;
 
-	@After
-	public void closeContext() {
+	@AfterEach
+	void closeContext() {
 		if (this.context != null) {
 			this.context.close();
 		}
 	}
 
 	@Test
-	public void sampleReport() {
+	void sampleReport(CapturedOutput output) {
 		this.context = createSampleApplication().run("--banner.charset=UTF8");
-		assertThat(this.output.toString()).contains("commandLineArgs")
-				.contains("spring.banner.charset")
+		assertThat(output).contains("commandLineArgs").contains("spring.banner.charset")
 				.contains("Each configuration key has been temporarily mapped")
 				.doesNotContain("Please refer to the migration guide");
 	}
@@ -60,7 +58,7 @@ public class PropertiesMigrationListenerTests {
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	public static class TestApplication {
+	static class TestApplication {
 
 	}
 

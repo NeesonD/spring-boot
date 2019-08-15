@@ -39,10 +39,9 @@ import org.springframework.util.StringUtils;
  * @param <T> the type of {@link Filter} to register
  * @author Phillip Webb
  * @author Brian Clozel
- * @since 2.0.1
+ * @since 1.5.22
  */
-public abstract class AbstractFilterRegistrationBean<T extends Filter>
-		extends DynamicRegistrationBean<Dynamic> {
+public abstract class AbstractFilterRegistrationBean<T extends Filter> extends DynamicRegistrationBean<Dynamic> {
 
 	private static final String[] DEFAULT_URL_MAPPINGS = { "/*" };
 
@@ -61,10 +60,8 @@ public abstract class AbstractFilterRegistrationBean<T extends Filter>
 	 * {@link ServletRegistrationBean}s.
 	 * @param servletRegistrationBeans associate {@link ServletRegistrationBean}s
 	 */
-	AbstractFilterRegistrationBean(
-			ServletRegistrationBean<?>... servletRegistrationBeans) {
-		Assert.notNull(servletRegistrationBeans,
-				"ServletRegistrationBeans must not be null");
+	AbstractFilterRegistrationBean(ServletRegistrationBean<?>... servletRegistrationBeans) {
+		Assert.notNull(servletRegistrationBeans, "ServletRegistrationBeans must not be null");
 		Collections.addAll(this.servletRegistrationBeans, servletRegistrationBeans);
 	}
 
@@ -72,10 +69,8 @@ public abstract class AbstractFilterRegistrationBean<T extends Filter>
 	 * Set {@link ServletRegistrationBean}s that the filter will be registered against.
 	 * @param servletRegistrationBeans the Servlet registration beans
 	 */
-	public void setServletRegistrationBeans(
-			Collection<? extends ServletRegistrationBean<?>> servletRegistrationBeans) {
-		Assert.notNull(servletRegistrationBeans,
-				"ServletRegistrationBeans must not be null");
+	public void setServletRegistrationBeans(Collection<? extends ServletRegistrationBean<?>> servletRegistrationBeans) {
+		Assert.notNull(servletRegistrationBeans, "ServletRegistrationBeans must not be null");
 		this.servletRegistrationBeans = new LinkedHashSet<>(servletRegistrationBeans);
 	}
 
@@ -95,10 +90,8 @@ public abstract class AbstractFilterRegistrationBean<T extends Filter>
 	 * @param servletRegistrationBeans the servlet registration beans to add
 	 * @see #setServletRegistrationBeans
 	 */
-	public void addServletRegistrationBeans(
-			ServletRegistrationBean<?>... servletRegistrationBeans) {
-		Assert.notNull(servletRegistrationBeans,
-				"ServletRegistrationBeans must not be null");
+	public void addServletRegistrationBeans(ServletRegistrationBean<?>... servletRegistrationBeans) {
+		Assert.notNull(servletRegistrationBeans, "ServletRegistrationBeans must not be null");
 		Collections.addAll(this.servletRegistrationBeans, servletRegistrationBeans);
 	}
 
@@ -233,8 +226,7 @@ public abstract class AbstractFilterRegistrationBean<T extends Filter>
 		}
 		servletNames.addAll(this.servletNames);
 		if (servletNames.isEmpty() && this.urlPatterns.isEmpty()) {
-			registration.addMappingForUrlPatterns(dispatcherTypes, this.matchAfter,
-					DEFAULT_URL_MAPPINGS);
+			registration.addMappingForUrlPatterns(dispatcherTypes, this.matchAfter, DEFAULT_URL_MAPPINGS);
 		}
 		else {
 			if (!servletNames.isEmpty()) {
@@ -268,6 +260,7 @@ public abstract class AbstractFilterRegistrationBean<T extends Filter>
 				builder.append(" urls=").append(this.urlPatterns);
 			}
 		}
+		builder.append(" order=").append(getOrder());
 		return builder.toString();
 	}
 

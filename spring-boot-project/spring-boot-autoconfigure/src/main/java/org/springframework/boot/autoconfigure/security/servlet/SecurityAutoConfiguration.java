@@ -35,6 +35,7 @@ import org.springframework.security.authentication.DefaultAuthenticationEventPub
  * @author Dave Syer
  * @author Andy Wilkinson
  * @author Madhura Bhave
+ * @since 1.0.0
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(DefaultAuthenticationEventPublisher.class)
@@ -45,8 +46,7 @@ public class SecurityAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(AuthenticationEventPublisher.class)
-	public DefaultAuthenticationEventPublisher authenticationEventPublisher(
-			ApplicationEventPublisher publisher) {
+	public DefaultAuthenticationEventPublisher authenticationEventPublisher(ApplicationEventPublisher publisher) {
 		return new DefaultAuthenticationEventPublisher(publisher);
 	}
 

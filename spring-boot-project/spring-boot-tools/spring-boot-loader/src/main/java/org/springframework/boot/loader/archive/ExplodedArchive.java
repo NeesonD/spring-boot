@@ -39,11 +39,11 @@ import java.util.jar.Manifest;
  *
  * @author Phillip Webb
  * @author Andy Wilkinson
+ * @since 1.0.0
  */
 public class ExplodedArchive implements Archive {
 
-	private static final Set<String> SKIPPED_NAMES = new HashSet<>(
-			Arrays.asList(".", ".."));
+	private static final Set<String> SKIPPED_NAMES = new HashSet<>(Arrays.asList(".", ".."));
 
 	private final File root;
 
@@ -116,8 +116,7 @@ public class ExplodedArchive implements Archive {
 
 	protected Archive getNestedArchive(Entry entry) throws IOException {
 		File file = ((FileEntry) entry).getFile();
-		return (file.isDirectory() ? new ExplodedArchive(file)
-				: new JarFileArchive(file));
+		return (file.isDirectory() ? new ExplodedArchive(file) : new JarFileArchive(file));
 	}
 
 	@Override
@@ -163,20 +162,18 @@ public class ExplodedArchive implements Archive {
 				throw new NoSuchElementException();
 			}
 			File file = this.current;
-			if (file.isDirectory()
-					&& (this.recursive || file.getParentFile().equals(this.root))) {
+			if (file.isDirectory() && (this.recursive || file.getParentFile().equals(this.root))) {
 				this.stack.addFirst(listFiles(file));
 			}
 			this.current = poll();
-			String name = file.toURI().getPath()
-					.substring(this.root.toURI().getPath().length());
+			String name = file.toURI().getPath().substring(this.root.toURI().getPath().length());
 			return new FileEntry(name, file);
 		}
 
 		private Iterator<File> listFiles(File file) {
 			File[] files = file.listFiles();
 			if (files == null) {
-				return Collections.<File>emptyList().iterator();
+				return Collections.emptyIterator();
 			}
 			Arrays.sort(files, this.entryComparator);
 			return Arrays.asList(files).iterator();
@@ -228,7 +225,7 @@ public class ExplodedArchive implements Archive {
 			this.file = file;
 		}
 
-		public File getFile() {
+		File getFile() {
 			return this.file;
 		}
 

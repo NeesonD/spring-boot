@@ -46,17 +46,16 @@ import static org.mockito.Mockito.verify;
  * @see <a href="https://github.com/spring-projects/spring-boot/issues/5837">5837</a>
  */
 @ExtendWith(SpringExtension.class)
-public class SpyBeanWithAopProxyAndNotProxyTargetAwareTests {
+class SpyBeanWithAopProxyAndNotProxyTargetAwareTests {
 
 	@SpyBean(proxyTargetAware = false)
 	private DateService dateService;
 
 	@Test
-	public void verifyShouldUseProxyTarget() {
+	void verifyShouldUseProxyTarget() {
 		this.dateService.getDate(false);
 		verify(this.dateService, times(1)).getDate(false);
-		assertThatExceptionOfType(UnfinishedVerificationException.class)
-				.isThrownBy(() -> reset(this.dateService));
+		assertThatExceptionOfType(UnfinishedVerificationException.class).isThrownBy(() -> reset(this.dateService));
 	}
 
 	@Configuration(proxyBeanMethods = false)
@@ -65,14 +64,14 @@ public class SpyBeanWithAopProxyAndNotProxyTargetAwareTests {
 	static class Config {
 
 		@Bean
-		public CacheResolver cacheResolver(CacheManager cacheManager) {
+		CacheResolver cacheResolver(CacheManager cacheManager) {
 			SimpleCacheResolver resolver = new SimpleCacheResolver();
 			resolver.setCacheManager(cacheManager);
 			return resolver;
 		}
 
 		@Bean
-		public ConcurrentMapCacheManager cacheManager() {
+		ConcurrentMapCacheManager cacheManager() {
 			ConcurrentMapCacheManager cacheManager = new ConcurrentMapCacheManager();
 			cacheManager.setCacheNames(Arrays.asList("test"));
 			return cacheManager;
@@ -81,7 +80,7 @@ public class SpyBeanWithAopProxyAndNotProxyTargetAwareTests {
 	}
 
 	@Service
-	static class DateService {
+	public static class DateService {
 
 		@Cacheable(cacheNames = "test")
 		public Long getDate(boolean arg) {

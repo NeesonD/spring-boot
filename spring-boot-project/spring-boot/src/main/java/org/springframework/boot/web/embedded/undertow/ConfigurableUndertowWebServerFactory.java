@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package org.springframework.boot.web.embedded.undertow;
 import java.io.File;
 
 import io.undertow.Undertow.Builder;
-import io.undertow.servlet.api.DeploymentInfo;
 
 import org.springframework.boot.web.server.ConfigurableWebServerFactory;
 
@@ -31,8 +30,7 @@ import org.springframework.boot.web.server.ConfigurableWebServerFactory;
  * @see UndertowServletWebServerFactory
  * @see UndertowReactiveWebServerFactory
  */
-public interface ConfigurableUndertowWebServerFactory
-		extends ConfigurableWebServerFactory {
+public interface ConfigurableUndertowWebServerFactory extends ConfigurableWebServerFactory {
 
 	/**
 	 * Add {@link UndertowBuilderCustomizer}s that should be used to customize the
@@ -40,13 +38,6 @@ public interface ConfigurableUndertowWebServerFactory
 	 * @param customizers the customizers to add
 	 */
 	void addBuilderCustomizers(UndertowBuilderCustomizer... customizers);
-
-	/**
-	 * Add {@link UndertowDeploymentInfoCustomizer}s that should be used to customize the
-	 * Undertow {@link DeploymentInfo}.
-	 * @param customizers the customizers to add
-	 */
-	void addDeploymentInfoCustomizers(UndertowDeploymentInfoCustomizer... customizers);
 
 	/**
 	 * Set the buffer size.

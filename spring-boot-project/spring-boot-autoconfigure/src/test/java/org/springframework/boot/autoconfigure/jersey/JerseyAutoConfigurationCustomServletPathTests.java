@@ -52,15 +52,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @DirtiesContext
-public class JerseyAutoConfigurationCustomServletPathTests {
+class JerseyAutoConfigurationCustomServletPathTests {
 
 	@Autowired
 	private TestRestTemplate restTemplate;
 
 	@Test
-	public void contextLoads() {
-		ResponseEntity<String> entity = this.restTemplate.getForEntity("/rest/hello",
-				String.class);
+	void contextLoads() {
+		ResponseEntity<String> entity = this.restTemplate.getForEntity("/rest/hello", String.class);
 		assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.OK);
 	}
 
@@ -72,16 +71,16 @@ public class JerseyAutoConfigurationCustomServletPathTests {
 		@Value("${message:World}")
 		private String msg;
 
+		Application() {
+			register(Application.class);
+		}
+
 		@GET
 		public String message() {
 			return "Hello " + this.msg;
 		}
 
-		public Application() {
-			register(Application.class);
-		}
-
-		public static void main(String[] args) {
+		static void main(String[] args) {
 			SpringApplication.run(Application.class, args);
 		}
 
@@ -91,8 +90,8 @@ public class JerseyAutoConfigurationCustomServletPathTests {
 	@Retention(RetentionPolicy.RUNTIME)
 	@Documented
 	@Configuration
-	@Import({ ServletWebServerFactoryAutoConfiguration.class,
-			JerseyAutoConfiguration.class, PropertyPlaceholderAutoConfiguration.class })
+	@Import({ ServletWebServerFactoryAutoConfiguration.class, JerseyAutoConfiguration.class,
+			PropertyPlaceholderAutoConfiguration.class })
 	protected @interface MinimalWebConfiguration {
 
 	}

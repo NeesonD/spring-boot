@@ -45,49 +45,47 @@ public class FreeMarkerAutoConfigurationTests {
 			.withConfiguration(AutoConfigurations.of(FreeMarkerAutoConfiguration.class));
 
 	@Test
-	public void renderNonWebAppTemplate() {
+	void renderNonWebAppTemplate() {
 		this.contextRunner.run((context) -> {
-			freemarker.template.Configuration freemarker = context
-					.getBean(freemarker.template.Configuration.class);
+			freemarker.template.Configuration freemarker = context.getBean(freemarker.template.Configuration.class);
 			StringWriter writer = new StringWriter();
-			freemarker.getTemplate("message.ftl").process(this, writer);
+			freemarker.getTemplate("message.ftlh").process(new DataModel(), writer);
 			assertThat(writer.toString()).contains("Hello World");
 		});
 	}
 
-	public String getGreeting() {
-		return "Hello World";
-	}
-
 	@Test
-	public void nonExistentTemplateLocation(CapturedOutput capturedOutput) {
+	void nonExistentTemplateLocation(CapturedOutput output) {
 		this.contextRunner
 				.withPropertyValues("spring.freemarker.templateLoaderPath:"
 						+ "classpath:/does-not-exist/,classpath:/also-does-not-exist")
-				.run((context) -> assertThat(capturedOutput)
-						.contains("Cannot find template location"));
+				.run((context) -> assertThat(output).contains("Cannot find template location"));
 	}
 
 	@Test
-	public void emptyTemplateLocation(CapturedOutput capturedOutput) {
-		File emptyDirectory = new File(this.buildOutput.getTestResourcesLocation(),
-				"empty-templates/empty-directory");
+	void emptyTemplateLocation(CapturedOutput output) {
+		File emptyDirectory = new File(this.buildOutput.getTestResourcesLocation(), "empty-templates/empty-directory");
 		emptyDirectory.mkdirs();
 		this.contextRunner
-				.withPropertyValues("spring.freemarker.templateLoaderPath:"
-						+ "classpath:/empty-templates/empty-directory/")
-				.run((context) -> assertThat(capturedOutput)
-						.doesNotContain("Cannot find template location"));
+				.withPropertyValues("spring.freemarker.templateLoaderPath:classpath:/empty-templates/empty-directory/")
+				.run((context) -> assertThat(output).doesNotContain("Cannot find template location"));
 	}
 
 	@Test
-	public void nonExistentLocationAndEmptyLocation(CapturedOutput capturedOutput) {
-		new File(this.buildOutput.getTestResourcesLocation(),
-				"empty-templates/empty-directory").mkdirs();
-		this.contextRunner.withPropertyValues("spring.freemarker.templateLoaderPath:"
-				+ "classpath:/does-not-exist/,classpath:/empty-templates/empty-directory/")
-				.run((context) -> assertThat(capturedOutput)
-						.doesNotContain("Cannot find template location"));
+	void nonExistentLocationAndEmptyLocation(CapturedOutput output) {
+		new File(this.buildOutput.getTestResourcesLocation(), "empty-templates/empty-directory").mkdirs();
+		this.contextRunner
+				.withPropertyValues("spring.freemarker.templateLoaderPath:"
+						+ "classpath:/does-not-exist/,classpath:/empty-templates/empty-directory/")
+				.run((context) -> assertThat(output).doesNotContain("Cannot find template location"));
+	}
+
+	public static class DataModel {
+
+		public String getGreeting() {
+			return "Hello World";
+		}
+
 	}
 
 }

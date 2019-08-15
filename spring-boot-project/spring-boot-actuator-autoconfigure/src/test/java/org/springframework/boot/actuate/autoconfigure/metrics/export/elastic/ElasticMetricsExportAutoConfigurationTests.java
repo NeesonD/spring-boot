@@ -34,69 +34,59 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * @author Andy Wilkinson
  */
-public class ElasticMetricsExportAutoConfigurationTests {
+class ElasticMetricsExportAutoConfigurationTests {
 
 	private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-			.withConfiguration(
-					AutoConfigurations.of(ElasticMetricsExportAutoConfiguration.class));
+			.withConfiguration(AutoConfigurations.of(ElasticMetricsExportAutoConfiguration.class));
 
 	@Test
-	public void backsOffWithoutAClock() {
-		this.contextRunner.run((context) -> assertThat(context)
-				.doesNotHaveBean(ElasticMeterRegistry.class));
+	void backsOffWithoutAClock() {
+		this.contextRunner.run((context) -> assertThat(context).doesNotHaveBean(ElasticMeterRegistry.class));
 	}
 
 	@Test
-	public void autoConfiguresConfigAndMeterRegistry() {
-		this.contextRunner.withUserConfiguration(BaseConfiguration.class)
-				.run((context) -> assertThat(context)
-						.hasSingleBean(ElasticMeterRegistry.class)
-						.hasSingleBean(ElasticConfig.class));
+	void autoConfiguresConfigAndMeterRegistry() {
+		this.contextRunner.withUserConfiguration(BaseConfiguration.class).run((context) -> assertThat(context)
+				.hasSingleBean(ElasticMeterRegistry.class).hasSingleBean(ElasticConfig.class));
 	}
 
 	@Test
-	public void autoConfigurationCanBeDisabled() {
+	void autoConfigurationCanBeDisabled() {
 		this.contextRunner.withUserConfiguration(BaseConfiguration.class)
 				.withPropertyValues("management.metrics.export.elastic.enabled=false")
-				.run((context) -> assertThat(context)
-						.doesNotHaveBean(ElasticMeterRegistry.class)
+				.run((context) -> assertThat(context).doesNotHaveBean(ElasticMeterRegistry.class)
 						.doesNotHaveBean(ElasticConfig.class));
 	}
 
 	@Test
-	public void allowsCustomConfigToBeUsed() {
-		this.contextRunner.withUserConfiguration(CustomConfigConfiguration.class)
-				.run((context) -> assertThat(context)
-						.hasSingleBean(ElasticMeterRegistry.class)
-						.hasSingleBean(ElasticConfig.class).hasBean("customConfig"));
+	void allowsCustomConfigToBeUsed() {
+		this.contextRunner.withUserConfiguration(CustomConfigConfiguration.class).run((context) -> assertThat(context)
+				.hasSingleBean(ElasticMeterRegistry.class).hasSingleBean(ElasticConfig.class).hasBean("customConfig"));
 	}
 
 	@Test
-	public void allowsCustomRegistryToBeUsed() {
+	void allowsCustomRegistryToBeUsed() {
 		this.contextRunner.withUserConfiguration(CustomRegistryConfiguration.class)
 
-				.run((context) -> assertThat(context)
-						.hasSingleBean(ElasticMeterRegistry.class)
+				.run((context) -> assertThat(context).hasSingleBean(ElasticMeterRegistry.class)
 						.hasBean("customRegistry").hasSingleBean(ElasticConfig.class));
 	}
 
 	@Test
-	public void stopsMeterRegistryWhenContextIsClosed() {
-		this.contextRunner.withUserConfiguration(BaseConfiguration.class)
-				.run((context) -> {
-					ElasticMeterRegistry registry = context
-							.getBean(ElasticMeterRegistry.class);
-					assertThat(registry.isClosed()).isFalse();
-					context.close();
-					assertThat(registry.isClosed()).isTrue();
-				});
+	void stopsMeterRegistryWhenContextIsClosed() {
+		this.contextRunner.withUserConfiguration(BaseConfiguration.class).run((context) -> {
+			ElasticMeterRegistry registry = context.getBean(ElasticMeterRegistry.class);
+			assertThat(registry.isClosed()).isFalse();
+			context.close();
+			assertThat(registry.isClosed()).isTrue();
+		});
 	}
 
 	@Configuration(proxyBeanMethods = false)
 	static class BaseConfiguration {
 
 		@Bean
-		public Clock clock() {
+		Clock clock() {
 			return Clock.SYSTEM;
 		}
 
@@ -107,7 +97,7 @@ public class ElasticMetricsExportAutoConfigurationTests {
 	static class CustomConfigConfiguration {
 
 		@Bean
-		public ElasticConfig customConfig() {
+		ElasticConfig customConfig() {
 			return (key) -> null;
 		}
 
@@ -118,7 +108,7 @@ public class ElasticMetricsExportAutoConfigurationTests {
 	static class CustomRegistryConfiguration {
 
 		@Bean
-		public ElasticMeterRegistry customRegistry(ElasticConfig config, Clock clock) {
+		ElasticMeterRegistry customRegistry(ElasticConfig config, Clock clock) {
 			return new ElasticMeterRegistry(config, clock);
 		}
 

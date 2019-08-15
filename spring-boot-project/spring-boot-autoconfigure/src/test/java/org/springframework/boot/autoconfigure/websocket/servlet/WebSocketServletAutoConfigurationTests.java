@@ -37,36 +37,35 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * @author Andy Wilkinson
  */
-public class WebSocketServletAutoConfigurationTests {
+class WebSocketServletAutoConfigurationTests {
 
 	private AnnotationConfigServletWebServerApplicationContext context;
 
 	@BeforeEach
-	public void createContext() {
+	void createContext() {
 		this.context = new AnnotationConfigServletWebServerApplicationContext();
 	}
 
 	@AfterEach
-	public void close() {
+	void close() {
 		if (this.context != null) {
 			this.context.close();
 		}
 	}
 
 	@Test
-	public void tomcatServerContainerIsAvailableFromTheServletContext() {
+	void tomcatServerContainerIsAvailableFromTheServletContext() {
 		serverContainerIsAvailableFromTheServletContext(TomcatConfiguration.class,
 				WebSocketServletAutoConfiguration.TomcatWebSocketConfiguration.class);
 	}
 
 	@Test
-	public void jettyServerContainerIsAvailableFromTheServletContext() {
+	void jettyServerContainerIsAvailableFromTheServletContext() {
 		serverContainerIsAvailableFromTheServletContext(JettyConfiguration.class,
 				WebSocketServletAutoConfiguration.JettyWebSocketConfiguration.class);
 	}
 
-	private void serverContainerIsAvailableFromTheServletContext(
-			Class<?>... configuration) {
+	private void serverContainerIsAvailableFromTheServletContext(Class<?>... configuration) {
 		this.context.register(configuration);
 		this.context.refresh();
 		Object serverContainer = this.context.getServletContext()
@@ -79,7 +78,7 @@ public class WebSocketServletAutoConfigurationTests {
 	static class CommonConfiguration {
 
 		@Bean
-		public WebServerFactoryCustomizerBeanPostProcessor ServletWebServerCustomizerBeanPostProcessor() {
+		WebServerFactoryCustomizerBeanPostProcessor ServletWebServerCustomizerBeanPostProcessor() {
 			return new WebServerFactoryCustomizerBeanPostProcessor();
 		}
 
@@ -89,7 +88,7 @@ public class WebSocketServletAutoConfigurationTests {
 	static class TomcatConfiguration extends CommonConfiguration {
 
 		@Bean
-		public ServletWebServerFactory webServerFactory() {
+		ServletWebServerFactory webServerFactory() {
 			TomcatServletWebServerFactory factory = new TomcatServletWebServerFactory();
 			factory.setPort(0);
 			return factory;
@@ -101,7 +100,7 @@ public class WebSocketServletAutoConfigurationTests {
 	static class JettyConfiguration extends CommonConfiguration {
 
 		@Bean
-		public ServletWebServerFactory webServerFactory() {
+		ServletWebServerFactory webServerFactory() {
 			JettyServletWebServerFactory JettyServletWebServerFactory = new JettyServletWebServerFactory();
 			JettyServletWebServerFactory.setPort(0);
 			return JettyServletWebServerFactory;

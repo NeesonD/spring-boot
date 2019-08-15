@@ -49,18 +49,16 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * @author Eddú Meléndez
  */
-@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT,
-		properties = "spring.jersey.application-path=/api")
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, properties = "spring.jersey.application-path=/api")
 @DirtiesContext
-public class JerseyAutoConfigurationWithoutApplicationPathTests {
+class JerseyAutoConfigurationWithoutApplicationPathTests {
 
 	@Autowired
 	private TestRestTemplate restTemplate;
 
 	@Test
-	public void contextLoads() {
-		ResponseEntity<String> entity = this.restTemplate.getForEntity("/api/hello",
-				String.class);
+	void contextLoads() {
+		ResponseEntity<String> entity = this.restTemplate.getForEntity("/api/hello", String.class);
 		assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.OK);
 	}
 
@@ -71,16 +69,16 @@ public class JerseyAutoConfigurationWithoutApplicationPathTests {
 		@Value("${message:World}")
 		private String msg;
 
+		Application() {
+			register(Application.class);
+		}
+
 		@GET
 		public String message() {
 			return "Hello " + this.msg;
 		}
 
-		public Application() {
-			register(Application.class);
-		}
-
-		public static void main(String[] args) {
+		static void main(String[] args) {
 			SpringApplication.run(Application.class, args);
 		}
 
@@ -90,8 +88,8 @@ public class JerseyAutoConfigurationWithoutApplicationPathTests {
 	@Retention(RetentionPolicy.RUNTIME)
 	@Documented
 	@Configuration
-	@Import({ ServletWebServerFactoryAutoConfiguration.class,
-			JerseyAutoConfiguration.class, PropertyPlaceholderAutoConfiguration.class })
+	@Import({ ServletWebServerFactoryAutoConfiguration.class, JerseyAutoConfiguration.class,
+			PropertyPlaceholderAutoConfiguration.class })
 	protected @interface MinimalWebConfiguration {
 
 	}

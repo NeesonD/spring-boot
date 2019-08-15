@@ -60,13 +60,13 @@ import org.apache.coyote.http11.AbstractHttp11Protocol;
 import org.apache.jasper.servlet.JspServlet;
 import org.apache.tomcat.JarScanFilter;
 import org.apache.tomcat.JarScanType;
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 
-import org.springframework.boot.testsupport.rule.OutputCapture;
+import org.springframework.boot.testsupport.system.CapturedOutput;
+import org.springframework.boot.web.server.PortInUseException;
 import org.springframework.boot.web.server.WebServerException;
 import org.springframework.boot.web.servlet.server.AbstractServletWebServerFactory;
 import org.springframework.boot.web.servlet.server.AbstractServletWebServerFactoryTests;
@@ -97,43 +97,36 @@ import static org.mockito.Mockito.verify;
  * @author Dave Syer
  * @author Stephane Nicoll
  */
-public class TomcatServletWebServerFactoryTests
-		extends AbstractServletWebServerFactoryTests {
-
-	@Rule
-	public OutputCapture outputCapture = new OutputCapture();
+class TomcatServletWebServerFactoryTests extends AbstractServletWebServerFactoryTests {
 
 	@Override
 	protected TomcatServletWebServerFactory getFactory() {
 		return new TomcatServletWebServerFactory(0);
 	}
 
-	@After
-	public void restoreTccl() {
-		ReflectionTestUtils.setField(TomcatURLStreamHandlerFactory.class, "instance",
-				null);
+	@AfterEach
+	void restoreTccl() {
+		ReflectionTestUtils.setField(TomcatURLStreamHandlerFactory.class, "instance", null);
 		ReflectionTestUtils.setField(URL.class, "factory", null);
 		Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
 	}
 
 	// JMX MBean names clash if you get more than one Engine with the same name...
 	@Test
-	public void tomcatEngineNames() {
+	void tomcatEngineNames() {
 		TomcatServletWebServerFactory factory = getFactory();
 		this.webServer = factory.getWebServer();
 		factory.setPort(0);
 		TomcatWebServer tomcatWebServer = (TomcatWebServer) factory.getWebServer();
 		// Make sure that the names are different
-		String firstName = ((TomcatWebServer) this.webServer).getTomcat().getEngine()
-				.getName();
+		String firstName = ((TomcatWebServer) this.webServer).getTomcat().getEngine().getName();
 		String secondName = tomcatWebServer.getTomcat().getEngine().getName();
-		assertThat(firstName).as("Tomcat engines must have different names")
-				.isNotEqualTo(secondName);
+		assertThat(firstName).as("Tomcat engines must have different names").isNotEqualTo(secondName);
 		tomcatWebServer.stop();
 	}
 
 	@Test
-	public void defaultTomcatListeners() {
+	void defaultTomcatListeners() {
 		TomcatServletWebServerFactory factory = getFactory();
 		if (AprLifecycleListener.isAprAvailable()) {
 			assertThat(factory.getContextLifecycleListeners()).hasSize(1).first()
@@ -145,7 +138,7 @@ public class TomcatServletWebServerFactoryTests
 	}
 
 	@Test
-	public void tomcatListeners() {
+	void tomcatListeners() {
 		TomcatServletWebServerFactory factory = getFactory();
 		LifecycleListener[] listeners = new LifecycleListener[4];
 		Arrays.setAll(listeners, (i) -> mock(LifecycleListener.class));
@@ -159,12 +152,11 @@ public class TomcatServletWebServerFactoryTests
 	}
 
 	@Test
-	public void tomcatCustomizers() {
+	void tomcatCustomizers() {
 		TomcatServletWebServerFactory factory = getFactory();
 		TomcatContextCustomizer[] customizers = new TomcatContextCustomizer[4];
 		Arrays.setAll(customizers, (i) -> mock(TomcatContextCustomizer.class));
-		factory.setTomcatContextCustomizers(
-				Arrays.asList(customizers[0], customizers[1]));
+		factory.setTomcatContextCustomizers(Arrays.asList(customizers[0], customizers[1]));
 		factory.addContextCustomizers(customizers[2], customizers[3]);
 		this.webServer = factory.getWebServer();
 		InOrder ordered = inOrder((Object[]) customizers);
@@ -174,7 +166,7 @@ public class TomcatServletWebServerFactoryTests
 	}
 
 	@Test
-	public void contextIsAddedToHostBeforeCustomizersAreCalled() {
+	void contextIsAddedToHostBeforeCustomizersAreCalled() {
 		TomcatServletWebServerFactory factory = getFactory();
 		TomcatContextCustomizer customizer = mock(TomcatContextCustomizer.class);
 		factory.addContextCustomizers(customizer);
@@ -185,12 +177,11 @@ public class TomcatServletWebServerFactoryTests
 	}
 
 	@Test
-	public void tomcatConnectorCustomizers() {
+	void tomcatConnectorCustomizers() {
 		TomcatServletWebServerFactory factory = getFactory();
 		TomcatConnectorCustomizer[] customizers = new TomcatConnectorCustomizer[4];
 		Arrays.setAll(customizers, (i) -> mock(TomcatConnectorCustomizer.class));
-		factory.setTomcatConnectorCustomizers(
-				Arrays.asList(customizers[0], customizers[1]));
+		factory.setTomcatConnectorCustomizers(Arrays.asList(customizers[0], customizers[1]));
 		factory.addConnectorCustomizers(customizers[2], customizers[3]);
 		this.webServer = factory.getWebServer();
 		InOrder ordered = inOrder((Object[]) customizers);
@@ -201,12 +192,11 @@ public class TomcatServletWebServerFactoryTests
 
 	@Test
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public void tomcatProtocolHandlerCustomizersShouldBeInvoked() {
+	void tomcatProtocolHandlerCustomizersShouldBeInvoked() {
 		TomcatServletWebServerFactory factory = getFactory();
 		TomcatProtocolHandlerCustomizer<AbstractHttp11Protocol<?>>[] customizers = new TomcatProtocolHandlerCustomizer[4];
 		Arrays.setAll(customizers, (i) -> mock(TomcatProtocolHandlerCustomizer.class));
-		factory.setTomcatProtocolHandlerCustomizers(
-				Arrays.asList(customizers[0], customizers[1]));
+		factory.setTomcatProtocolHandlerCustomizers(Arrays.asList(customizers[0], customizers[1]));
 		factory.addProtocolHandlerCustomizers(customizers[2], customizers[3]);
 		this.webServer = factory.getWebServer();
 		InOrder ordered = inOrder((Object[]) customizers);
@@ -216,64 +206,58 @@ public class TomcatServletWebServerFactoryTests
 	}
 
 	@Test
-	public void tomcatProtocolHandlerCanBeCustomized() {
+	void tomcatProtocolHandlerCanBeCustomized() {
 		TomcatServletWebServerFactory factory = getFactory();
-		TomcatProtocolHandlerCustomizer<AbstractHttp11Protocol<?>> customizer = (
-				protocolHandler) -> protocolHandler.setProcessorCache(250);
+		TomcatProtocolHandlerCustomizer<AbstractHttp11Protocol<?>> customizer = (protocolHandler) -> protocolHandler
+				.setProcessorCache(250);
 		factory.addProtocolHandlerCustomizers(customizer);
 		Tomcat tomcat = getTomcat(factory);
-		Connector connector = ((TomcatWebServer) this.webServer).getServiceConnectors()
-				.get(tomcat.getService())[0];
-		AbstractHttp11Protocol<?> protocolHandler = (AbstractHttp11Protocol<?>) connector
-				.getProtocolHandler();
+		Connector connector = ((TomcatWebServer) this.webServer).getServiceConnectors().get(tomcat.getService())[0];
+		AbstractHttp11Protocol<?> protocolHandler = (AbstractHttp11Protocol<?>) connector.getProtocolHandler();
 		assertThat(protocolHandler.getProcessorCache()).isEqualTo(250);
 	}
 
 	@Test
-	public void tomcatAdditionalConnectors() {
+	void tomcatAdditionalConnectors() {
 		TomcatServletWebServerFactory factory = getFactory();
 		Connector[] connectors = new Connector[4];
 		Arrays.setAll(connectors, (i) -> new Connector());
 		factory.addAdditionalTomcatConnectors(connectors);
 		this.webServer = factory.getWebServer();
-		Map<Service, Connector[]> connectorsByService = ((TomcatWebServer) this.webServer)
-				.getServiceConnectors();
-		assertThat(connectorsByService.values().iterator().next().length)
-				.isEqualTo(connectors.length + 1);
+		Map<Service, Connector[]> connectorsByService = ((TomcatWebServer) this.webServer).getServiceConnectors();
+		assertThat(connectorsByService.values().iterator().next().length).isEqualTo(connectors.length + 1);
 	}
 
 	@Test
-	public void addNullAdditionalConnectorThrows() {
+	void addNullAdditionalConnectorThrows() {
 		TomcatServletWebServerFactory factory = getFactory();
-		assertThatIllegalArgumentException()
-				.isThrownBy(
-						() -> factory.addAdditionalTomcatConnectors((Connector[]) null))
+		assertThatIllegalArgumentException().isThrownBy(() -> factory.addAdditionalTomcatConnectors((Connector[]) null))
 				.withMessageContaining("Connectors must not be null");
 	}
 
 	@Test
-	public void sessionTimeout() {
+	void sessionTimeout() {
 		TomcatServletWebServerFactory factory = getFactory();
 		factory.getSession().setTimeout(Duration.ofSeconds(10));
 		assertTimeout(factory, 1);
 	}
 
 	@Test
-	public void sessionTimeoutInMins() {
+	void sessionTimeoutInMins() {
 		TomcatServletWebServerFactory factory = getFactory();
 		factory.getSession().setTimeout(Duration.ofMinutes(1));
 		assertTimeout(factory, 1);
 	}
 
 	@Test
-	public void noSessionTimeout() {
+	void noSessionTimeout() {
 		TomcatServletWebServerFactory factory = getFactory();
 		factory.getSession().setTimeout(null);
 		assertTimeout(factory, -1);
 	}
 
 	@Test
-	public void valve() {
+	void valve() {
 		TomcatServletWebServerFactory factory = getFactory();
 		Valve valve = mock(Valve.class);
 		factory.addContextValves(valve);
@@ -282,97 +266,75 @@ public class TomcatServletWebServerFactoryTests
 	}
 
 	@Test
-	public void setNullTomcatContextCustomizersThrows() {
+	void setNullTomcatContextCustomizersThrows() {
 		TomcatServletWebServerFactory factory = getFactory();
-		assertThatIllegalArgumentException()
-				.isThrownBy(() -> factory.setTomcatContextCustomizers(null))
+		assertThatIllegalArgumentException().isThrownBy(() -> factory.setTomcatContextCustomizers(null))
 				.withMessageContaining("TomcatContextCustomizers must not be null");
 	}
 
 	@Test
-	public void addNullContextCustomizersThrows() {
+	void addNullContextCustomizersThrows() {
 		TomcatServletWebServerFactory factory = getFactory();
-		assertThatIllegalArgumentException().isThrownBy(
-				() -> factory.addContextCustomizers((TomcatContextCustomizer[]) null))
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> factory.addContextCustomizers((TomcatContextCustomizer[]) null))
 				.withMessageContaining("TomcatContextCustomizers must not be null");
 	}
 
 	@Test
-	public void setNullTomcatConnectorCustomizersThrows() {
+	void setNullTomcatConnectorCustomizersThrows() {
 		TomcatServletWebServerFactory factory = getFactory();
-		assertThatIllegalArgumentException()
-				.isThrownBy(() -> factory.setTomcatConnectorCustomizers(null))
+		assertThatIllegalArgumentException().isThrownBy(() -> factory.setTomcatConnectorCustomizers(null))
 				.withMessageContaining("TomcatConnectorCustomizers must not be null");
 	}
 
 	@Test
-	public void addNullConnectorCustomizersThrows() {
+	void addNullConnectorCustomizersThrows() {
 		TomcatServletWebServerFactory factory = getFactory();
-		assertThatIllegalArgumentException().isThrownBy(
-				() -> factory.addConnectorCustomizers((TomcatConnectorCustomizer[]) null))
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> factory.addConnectorCustomizers((TomcatConnectorCustomizer[]) null))
 				.withMessageContaining("TomcatConnectorCustomizers must not be null");
 	}
 
 	@Test
-	public void setNullTomcatProtocolHandlerCustomizersThrows() {
+	void setNullTomcatProtocolHandlerCustomizersThrows() {
+		TomcatServletWebServerFactory factory = getFactory();
+		assertThatIllegalArgumentException().isThrownBy(() -> factory.setTomcatProtocolHandlerCustomizers(null))
+				.withMessageContaining("TomcatProtocolHandlerCustomizers must not be null");
+	}
+
+	@Test
+	void addNullTomcatProtocolHandlerCustomizersThrows() {
 		TomcatServletWebServerFactory factory = getFactory();
 		assertThatIllegalArgumentException()
-				.isThrownBy(() -> factory.setTomcatProtocolHandlerCustomizers(null))
-				.withMessageContaining(
-						"TomcatProtocolHandlerCustomizers must not be null");
+				.isThrownBy(() -> factory.addProtocolHandlerCustomizers((TomcatProtocolHandlerCustomizer[]) null))
+				.withMessageContaining("TomcatProtocolHandlerCustomizers must not be null");
 	}
 
 	@Test
-	public void addNullTomcatProtocolHandlerCustomizersThrows() {
-		TomcatServletWebServerFactory factory = getFactory();
-		assertThatIllegalArgumentException().isThrownBy(() -> factory
-				.addProtocolHandlerCustomizers((TomcatProtocolHandlerCustomizer[]) null))
-				.withMessageContaining(
-						"TomcatProtocolHandlerCustomizers must not be null");
-	}
-
-	@Test
-	public void uriEncoding() {
+	void uriEncoding() {
 		TomcatServletWebServerFactory factory = getFactory();
 		factory.setUriEncoding(StandardCharsets.US_ASCII);
 		Tomcat tomcat = getTomcat(factory);
-		Connector connector = ((TomcatWebServer) this.webServer).getServiceConnectors()
-				.get(tomcat.getService())[0];
+		Connector connector = ((TomcatWebServer) this.webServer).getServiceConnectors().get(tomcat.getService())[0];
 		assertThat(connector.getURIEncoding()).isEqualTo("US-ASCII");
 	}
 
 	@Test
-	public void defaultUriEncoding() {
+	void defaultUriEncoding() {
 		TomcatServletWebServerFactory factory = getFactory();
 		Tomcat tomcat = getTomcat(factory);
-		Connector connector = ((TomcatWebServer) this.webServer).getServiceConnectors()
-				.get(tomcat.getService())[0];
+		Connector connector = ((TomcatWebServer) this.webServer).getServiceConnectors().get(tomcat.getService())[0];
 		assertThat(connector.getURIEncoding()).isEqualTo("UTF-8");
 	}
 
 	@Test
-	public void primaryConnectorPortClashThrowsWebServerException() throws IOException {
-		doWithBlockedPort((port) -> {
-			TomcatServletWebServerFactory factory = getFactory();
-			factory.setPort(port);
-			assertThatExceptionOfType(WebServerException.class).isThrownBy(() -> {
-				this.webServer = factory.getWebServer();
-				this.webServer.start();
-			});
-		});
-	}
-
-	@Test
-	public void startupFailureDoesNotResultInUnstoppedThreadsBeingReported()
-			throws IOException {
+	void startupFailureDoesNotResultInUnstoppedThreadsBeingReported(CapturedOutput output) throws IOException {
 		super.portClashOfPrimaryConnectorResultsInPortInUseException();
-		String string = this.outputCapture.toString();
-		assertThat(string)
-				.doesNotContain("appears to have started a thread named [main]");
+		assertThat(output).doesNotContain("appears to have started a thread named [main]");
 	}
 
 	@Test
-	public void stopCalledWithoutStart() {
+	void stopCalledWithoutStart() {
 		TomcatServletWebServerFactory factory = getFactory();
 		this.webServer = factory.getWebServer(exampleServletRegistration());
 		this.webServer.stop();
@@ -384,24 +346,22 @@ public class TomcatServletWebServerFactoryTests
 	protected void addConnector(int port, AbstractServletWebServerFactory factory) {
 		Connector connector = new Connector("org.apache.coyote.http11.Http11NioProtocol");
 		connector.setPort(port);
-		((TomcatServletWebServerFactory) factory)
-				.addAdditionalTomcatConnectors(connector);
+		((TomcatServletWebServerFactory) factory).addAdditionalTomcatConnectors(connector);
 	}
 
 	@Test
-	public void useForwardHeaders() throws Exception {
+	void useForwardHeaders() throws Exception {
 		TomcatServletWebServerFactory factory = getFactory();
 		factory.addContextValves(new RemoteIpValve());
 		assertForwardHeaderIsUsed(factory);
 	}
 
 	@Test
-	public void disableDoesNotSaveSessionFiles() throws Exception {
-		File baseDir = this.temporaryFolder.newFolder();
+	void disableDoesNotSaveSessionFiles() throws Exception {
 		TomcatServletWebServerFactory factory = getFactory();
 		// If baseDir is not set SESSIONS.ser is written to a different temp directory
 		// each time. By setting it we can really ensure that data isn't saved
-		factory.setBaseDirectory(baseDir);
+		factory.setBaseDirectory(this.tempDir);
 		this.webServer = factory.getWebServer(sessionServletRegistration());
 		this.webServer.start();
 		String s1 = getResponse(getLocalUrl("/session"));
@@ -416,8 +376,7 @@ public class TomcatServletWebServerFactoryTests
 	}
 
 	@Test
-	public void jndiLookupsCanBePerformedDuringApplicationContextRefresh()
-			throws NamingException {
+	void jndiLookupsCanBePerformedDuringApplicationContextRefresh() throws NamingException {
 		Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
 		TomcatServletWebServerFactory factory = new TomcatServletWebServerFactory(0) {
 
@@ -436,12 +395,11 @@ public class TomcatServletWebServerFactoryTests
 		// and avoid a leak
 		this.webServer.start();
 		// Lookups should no longer be possible
-		assertThatExceptionOfType(NamingException.class)
-				.isThrownBy(() -> new InitialContext().lookup("java:comp/env"));
+		assertThatExceptionOfType(NamingException.class).isThrownBy(() -> new InitialContext().lookup("java:comp/env"));
 	}
 
 	@Test
-	public void defaultLocaleCharsetMappingsAreOverridden() {
+	void defaultLocaleCharsetMappingsAreOverridden() {
 		TomcatServletWebServerFactory factory = getFactory();
 		this.webServer = factory.getWebServer();
 		// override defaults, see org.apache.catalina.util.CharsetMapperDefault.properties
@@ -450,7 +408,7 @@ public class TomcatServletWebServerFactoryTests
 	}
 
 	@Test
-	public void sessionIdGeneratorIsConfiguredWithAttributesFromTheManager() {
+	void sessionIdGeneratorIsConfiguredWithAttributesFromTheManager() {
 		System.setProperty("jvmRoute", "test");
 		try {
 			TomcatServletWebServerFactory factory = getFactory();
@@ -462,14 +420,13 @@ public class TomcatServletWebServerFactoryTests
 		}
 		Tomcat tomcat = ((TomcatWebServer) this.webServer).getTomcat();
 		Context context = (Context) tomcat.getHost().findChildren()[0];
-		SessionIdGenerator sessionIdGenerator = context.getManager()
-				.getSessionIdGenerator();
+		SessionIdGenerator sessionIdGenerator = context.getManager().getSessionIdGenerator();
 		assertThat(sessionIdGenerator).isInstanceOf(LazySessionIdGenerator.class);
 		assertThat(sessionIdGenerator.getJvmRoute()).isEqualTo("test");
 	}
 
 	@Test
-	public void tldSkipPatternsShouldBeAppliedToContextJarScanner() {
+	void tldSkipPatternsShouldBeAppliedToContextJarScanner() {
 		TomcatServletWebServerFactory factory = getFactory();
 		factory.addTldSkipPatterns("foo.jar", "bar.jar");
 		this.webServer = factory.getWebServer();
@@ -483,7 +440,7 @@ public class TomcatServletWebServerFactoryTests
 	}
 
 	@Test
-	public void customTomcatHttpOnlyCookie() {
+	void customTomcatHttpOnlyCookie() {
 		TomcatServletWebServerFactory factory = getFactory();
 		factory.getSession().getCookie().setHttpOnly(false);
 		this.webServer = factory.getWebServer();
@@ -494,34 +451,33 @@ public class TomcatServletWebServerFactoryTests
 	}
 
 	@Test
-	public void exceptionThrownOnLoadFailureWhenFailCtxIfServletStartFailsIsTrue() {
+	void exceptionThrownOnLoadFailureWhenFailCtxIfServletStartFailsIsTrue() {
 		TomcatServletWebServerFactory factory = getFactory();
 		factory.addContextCustomizers((context) -> {
 			if (context instanceof StandardContext) {
 				((StandardContext) context).setFailCtxIfServletStartFails(true);
 			}
 		});
-		this.webServer = factory.getWebServer((context) -> context
-				.addServlet("failing", FailingServlet.class).setLoadOnStartup(0));
-		assertThatExceptionOfType(WebServerException.class)
-				.isThrownBy(this.webServer::start);
+		this.webServer = factory
+				.getWebServer((context) -> context.addServlet("failing", FailingServlet.class).setLoadOnStartup(0));
+		assertThatExceptionOfType(WebServerException.class).isThrownBy(this.webServer::start);
 	}
 
 	@Test
-	public void exceptionThrownOnLoadFailureWhenFailCtxIfServletStartFailsIsFalse() {
+	void exceptionThrownOnLoadFailureWhenFailCtxIfServletStartFailsIsFalse() {
 		TomcatServletWebServerFactory factory = getFactory();
 		factory.addContextCustomizers((context) -> {
 			if (context instanceof StandardContext) {
 				((StandardContext) context).setFailCtxIfServletStartFails(false);
 			}
 		});
-		this.webServer = factory.getWebServer((context) -> context
-				.addServlet("failing", FailingServlet.class).setLoadOnStartup(0));
+		this.webServer = factory
+				.getWebServer((context) -> context.addServlet("failing", FailingServlet.class).setLoadOnStartup(0));
 		this.webServer.start();
 	}
 
 	@Test
-	public void referenceClearingIsDisabled() {
+	void referenceClearingIsDisabled() {
 		TomcatServletWebServerFactory factory = getFactory();
 		this.webServer = factory.getWebServer();
 		this.webServer.start();
@@ -533,8 +489,7 @@ public class TomcatServletWebServerFactoryTests
 	}
 
 	@Test
-	public void nonExistentUploadDirectoryIsCreatedUponMultipartUpload()
-			throws IOException, URISyntaxException {
+	void nonExistentUploadDirectoryIsCreatedUponMultipartUpload() throws IOException, URISyntaxException {
 		TomcatServletWebServerFactory factory = new TomcatServletWebServerFactory(0);
 		AtomicReference<ServletContext> servletContextReference = new AtomicReference<>();
 		factory.addInitializers((servletContext) -> {
@@ -553,23 +508,21 @@ public class TomcatServletWebServerFactoryTests
 		});
 		this.webServer = factory.getWebServer();
 		this.webServer.start();
-		File temp = (File) servletContextReference.get()
-				.getAttribute(ServletContext.TEMPDIR);
+		File temp = (File) servletContextReference.get().getAttribute(ServletContext.TEMPDIR);
 		FileSystemUtils.deleteRecursively(temp);
 		RestTemplate restTemplate = new RestTemplate();
 		HttpHeaders headers = new HttpHeaders();
 		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
 		body.add("file", new ByteArrayResource(new byte[1024 * 1024]));
 		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-		HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body,
-				headers);
-		ResponseEntity<String> response = restTemplate
-				.postForEntity(getLocalUrl("/upload"), requestEntity, String.class);
+		HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+		ResponseEntity<String> response = restTemplate.postForEntity(getLocalUrl("/upload"), requestEntity,
+				String.class);
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 	}
 
 	@Test
-	public void exceptionThrownOnContextListenerDestroysServer() {
+	void exceptionThrownOnContextListenerDestroysServer() {
 		TomcatServletWebServerFactory factory = new TomcatServletWebServerFactory(0) {
 
 			@Override
@@ -578,15 +531,13 @@ public class TomcatServletWebServerFactoryTests
 					return super.getTomcatWebServer(tomcat);
 				}
 				finally {
-					assertThat(tomcat.getServer().getState())
-							.isEqualTo(LifecycleState.DESTROYED);
+					assertThat(tomcat.getServer().getState()).isEqualTo(LifecycleState.DESTROYED);
 				}
 			}
 
 		};
-		assertThatExceptionOfType(WebServerException.class)
-				.isThrownBy(() -> factory.getWebServer((context) -> context
-						.addListener(new FailingServletContextListener())));
+		assertThatExceptionOfType(WebServerException.class).isThrownBy(
+				() -> factory.getWebServer((context) -> context.addListener(new FailingServletContextListener())));
 	}
 
 	@Override
@@ -603,8 +554,7 @@ public class TomcatServletWebServerFactoryTests
 
 	@Override
 	protected Map<String, String> getActualMimeMappings() {
-		Context context = (Context) ((TomcatWebServer) this.webServer).getTomcat()
-				.getHost().findChildren()[0];
+		Context context = (Context) ((TomcatWebServer) this.webServer).getTomcat().getHost().findChildren()[0];
 		Map<String, String> mimeMappings = new HashMap<>();
 		for (String extension : context.findMimeMappings()) {
 			mimeMappings.put(extension, context.findMimeMapping(extension));
@@ -614,8 +564,7 @@ public class TomcatServletWebServerFactoryTests
 
 	@Override
 	protected Charset getCharset(Locale locale) {
-		Context context = (Context) ((TomcatWebServer) this.webServer).getTomcat()
-				.getHost().findChildren()[0];
+		Context context = (Context) ((TomcatWebServer) this.webServer).getTomcat().getHost().findChildren()[0];
 		CharsetMapper mapper = ((TomcatEmbeddedContext) context).getCharsetMapper();
 		String charsetName = mapper.getCharset(locale);
 		return (charsetName != null) ? Charset.forName(charsetName) : null;
@@ -633,8 +582,13 @@ public class TomcatServletWebServerFactoryTests
 	}
 
 	@Override
-	protected void handleExceptionCausedByBlockedPort(RuntimeException ex,
-			int blockedPort) {
+	protected void handleExceptionCausedByBlockedPortOnPrimaryConnector(RuntimeException ex, int blockedPort) {
+		assertThat(ex).isInstanceOf(PortInUseException.class);
+		assertThat(((PortInUseException) ex).getPort()).isEqualTo(blockedPort);
+	}
+
+	@Override
+	protected void handleExceptionCausedByBlockedPortOnSecondaryConnector(RuntimeException ex, int blockedPort) {
 		assertThat(ex).isInstanceOf(ConnectorStartFailedException.class);
 		assertThat(((ConnectorStartFailedException) ex).getPort()).isEqualTo(blockedPort);
 	}

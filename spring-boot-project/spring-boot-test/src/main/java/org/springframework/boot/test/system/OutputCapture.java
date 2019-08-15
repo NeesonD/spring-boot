@@ -21,7 +21,6 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 import java.util.function.Consumer;
@@ -39,7 +38,7 @@ import org.springframework.util.ClassUtils;
  * @author Madhura Bhave
  * @author Phillip Webb
  * @author Andy Wilkinson
- * @since 2.2.0
+ * @author Sam Brannen
  * @see OutputCaptureExtension
  * @see OutputCaptureRule
  */
@@ -128,8 +127,7 @@ class OutputCapture implements CapturedOutput {
 
 	private String get(Predicate<Type> filter) {
 		Assert.state(!this.systemCaptures.isEmpty(),
-				"No system captures found. Check that you have used @RegisterExtension "
-						+ "or @ExtendWith and the fields are not private");
+				"No system captures found. Please check your output capture registration.");
 		StringBuilder builder = new StringBuilder();
 		for (SystemCapture systemCapture : this.systemCaptures) {
 			systemCapture.append(builder, filter);
@@ -143,12 +141,13 @@ class OutputCapture implements CapturedOutput {
 	 */
 	private static class SystemCapture {
 
+		private final Object monitor = new Object();
+
 		private final PrintStreamCapture out;
 
 		private final PrintStreamCapture err;
 
-		private final List<CapturedString> capturedStrings = Collections
-				.synchronizedList(new ArrayList<>());
+		private final List<CapturedString> capturedStrings = new ArrayList<>();
 
 		SystemCapture() {
 			this.out = new PrintStreamCapture(System.out, this::captureOut);
@@ -157,29 +156,37 @@ class OutputCapture implements CapturedOutput {
 			System.setErr(this.err);
 		}
 
-		public void release() {
+		void release() {
 			System.setOut(this.out.getParent());
 			System.setErr(this.err.getParent());
 		}
 
 		private void captureOut(String string) {
-			this.capturedStrings.add(new CapturedString(Type.OUT, string));
+			synchronized (this.monitor) {
+				this.capturedStrings.add(new CapturedString(Type.OUT, string));
+			}
 		}
 
 		private void captureErr(String string) {
-			this.capturedStrings.add(new CapturedString(Type.ERR, string));
+			synchronized (this.monitor) {
+				this.capturedStrings.add(new CapturedString(Type.ERR, string));
+			}
 		}
 
-		public void append(StringBuilder builder, Predicate<Type> filter) {
-			for (CapturedString stringCapture : this.capturedStrings) {
-				if (filter.test(stringCapture.getType())) {
-					builder.append(stringCapture);
+		void append(StringBuilder builder, Predicate<Type> filter) {
+			synchronized (this.monitor) {
+				for (CapturedString stringCapture : this.capturedStrings) {
+					if (filter.test(stringCapture.getType())) {
+						builder.append(stringCapture);
+					}
 				}
 			}
 		}
 
-		public void reset() {
-			this.capturedStrings.clear();
+		void reset() {
+			synchronized (this.monitor) {
+				this.capturedStrings.clear();
+			}
 		}
 
 	}
@@ -196,7 +203,7 @@ class OutputCapture implements CapturedOutput {
 			this.parent = parent;
 		}
 
-		public PrintStream getParent() {
+		PrintStream getParent() {
 			return this.parent;
 		}
 
@@ -255,7 +262,7 @@ class OutputCapture implements CapturedOutput {
 			this.string = string;
 		}
 
-		public Type getType() {
+		Type getType() {
 			return this.type;
 		}
 
@@ -287,11 +294,11 @@ class OutputCapture implements CapturedOutput {
 			AnsiOutput.setEnabled(Enabled.NEVER);
 		}
 
-		public void restore() {
+		void restore() {
 			AnsiOutput.setEnabled(this.saved);
 		}
 
-		public static AnsiOutputState saveAndDisable() {
+		static AnsiOutputState saveAndDisable() {
 			if (!ClassUtils.isPresent("org.springframework.boot.ansi.AnsiOutput",
 					OutputCapture.class.getClassLoader())) {
 				return null;

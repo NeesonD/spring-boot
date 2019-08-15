@@ -55,15 +55,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT,
 		properties = "spring.jackson.default-property-inclusion:non-null")
 @DirtiesContext
-public class JerseyAutoConfigurationObjectMapperProviderTests {
+class JerseyAutoConfigurationObjectMapperProviderTests {
 
 	@Autowired
 	private TestRestTemplate restTemplate;
 
 	@Test
-	public void responseIsSerializedUsingAutoConfiguredObjectMapper() {
-		ResponseEntity<String> response = this.restTemplate.getForEntity("/rest/message",
-				String.class);
+	void responseIsSerializedUsingAutoConfiguredObjectMapper() {
+		ResponseEntity<String> response = this.restTemplate.getForEntity("/rest/message", String.class);
 		assertThat(HttpStatus.OK).isEqualTo(response.getStatusCode());
 		assertThat(response.getBody()).isEqualTo("{\"subject\":\"Jersey\"}");
 	}
@@ -73,16 +72,16 @@ public class JerseyAutoConfigurationObjectMapperProviderTests {
 	@Path("/message")
 	public static class Application extends ResourceConfig {
 
+		Application() {
+			register(Application.class);
+		}
+
 		@GET
 		public Message message() {
 			return new Message("Jersey", null);
 		}
 
-		public Application() {
-			register(Application.class);
-		}
-
-		public static void main(String[] args) {
+		static void main(String[] args) {
 			SpringApplication.run(Application.class, args);
 		}
 
@@ -94,11 +93,10 @@ public class JerseyAutoConfigurationObjectMapperProviderTests {
 
 		private String body;
 
-		public Message() {
-
+		Message() {
 		}
 
-		public Message(String subject, String body) {
+		Message(String subject, String body) {
 			this.subject = subject;
 			this.body = body;
 		}
@@ -130,9 +128,8 @@ public class JerseyAutoConfigurationObjectMapperProviderTests {
 	@Retention(RetentionPolicy.RUNTIME)
 	@Documented
 	@Configuration
-	@Import({ ServletWebServerFactoryAutoConfiguration.class,
-			JacksonAutoConfiguration.class, JerseyAutoConfiguration.class,
-			PropertyPlaceholderAutoConfiguration.class })
+	@Import({ ServletWebServerFactoryAutoConfiguration.class, JacksonAutoConfiguration.class,
+			JerseyAutoConfiguration.class, PropertyPlaceholderAutoConfiguration.class })
 	protected @interface MinimalWebConfiguration {
 
 	}

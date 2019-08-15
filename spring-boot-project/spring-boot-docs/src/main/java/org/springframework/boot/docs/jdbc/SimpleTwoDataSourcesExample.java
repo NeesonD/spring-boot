@@ -40,7 +40,7 @@ public class SimpleTwoDataSourcesExample {
 	 * A simple configuration that exposes two data sources.
 	 */
 	@Configuration
-	static class SimpleDataSourcesConfiguration {
+	public static class SimpleDataSourcesConfiguration {
 
 		// tag::configuration[]
 		@Bean
@@ -54,8 +54,7 @@ public class SimpleTwoDataSourcesExample {
 		@Primary
 		@ConfigurationProperties("app.datasource.first.configuration")
 		public HikariDataSource firstDataSource() {
-			return firstDataSourceProperties().initializeDataSourceBuilder()
-					.type(HikariDataSource.class).build();
+			return firstDataSourceProperties().initializeDataSourceBuilder().type(HikariDataSource.class).build();
 		}
 
 		@Bean

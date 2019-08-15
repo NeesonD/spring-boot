@@ -85,10 +85,8 @@ requests. If you want to raise an issue, please follow the recommendations below
   JVM version.
 * If you need to paste code, or include a stack trace use Markdown +++```+++ escapes
   before and after your text.
-* If possible try to create a test-case or project that replicates the issue. You can
-  submit sample projects as pull-requests against the
-  https://github.com/spring-projects/spring-boot-issues[spring-boot-issues] GitHub
-  project. Use the issue number for the name of your project.
+* If possible try to create a test-case or project that replicates the problem and attach
+  it to the issue.
 
 
 
@@ -250,9 +248,6 @@ running a fully packaged application.
 Groovy samples for use with the command line application are available in
 link:spring-boot-project/spring-boot-cli/samples[spring-boot-cli/samples]. To run the CLI samples type
 `spring run <sample>.groovy` from samples directory.
-
-Java samples are available in link:spring-boot-samples[spring-boot-samples] and should
-be built with maven and run by invoking `java -jar target/<sample>.jar`.
 
 
 

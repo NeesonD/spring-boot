@@ -19,8 +19,8 @@ package org.springframework.boot.web.servlet.context;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.web.embedded.jetty.JettyServletWebServerFactory;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
@@ -53,12 +53,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Phillip Webb
  * @author Ivan Sopov
  */
-public class ServletWebServerMvcIntegrationTests {
+class ServletWebServerMvcIntegrationTests {
 
 	private AnnotationConfigServletWebServerApplicationContext context;
 
-	@After
-	public void closeContext() {
+	@AfterEach
+	void closeContext() {
 		try {
 			this.context.close();
 		}
@@ -68,59 +68,52 @@ public class ServletWebServerMvcIntegrationTests {
 	}
 
 	@Test
-	public void tomcat() throws Exception {
-		this.context = new AnnotationConfigServletWebServerApplicationContext(
-				TomcatConfig.class);
+	void tomcat() throws Exception {
+		this.context = new AnnotationConfigServletWebServerApplicationContext(TomcatConfig.class);
 		doTest(this.context, "/hello");
 	}
 
 	@Test
-	public void jetty() throws Exception {
-		this.context = new AnnotationConfigServletWebServerApplicationContext(
-				JettyConfig.class);
+	void jetty() throws Exception {
+		this.context = new AnnotationConfigServletWebServerApplicationContext(JettyConfig.class);
 		doTest(this.context, "/hello");
 	}
 
 	@Test
-	public void undertow() throws Exception {
-		this.context = new AnnotationConfigServletWebServerApplicationContext(
-				UndertowConfig.class);
+	void undertow() throws Exception {
+		this.context = new AnnotationConfigServletWebServerApplicationContext(UndertowConfig.class);
 		doTest(this.context, "/hello");
 	}
 
 	@Test
-	public void advancedConfig() throws Exception {
-		this.context = new AnnotationConfigServletWebServerApplicationContext(
-				AdvancedConfig.class);
+	void advancedConfig() throws Exception {
+		this.context = new AnnotationConfigServletWebServerApplicationContext(AdvancedConfig.class);
 		doTest(this.context, "/example/spring/hello");
 	}
 
-	private void doTest(AnnotationConfigServletWebServerApplicationContext context,
-			String resourcePath) throws Exception {
+	private void doTest(AnnotationConfigServletWebServerApplicationContext context, String resourcePath)
+			throws Exception {
 		SimpleClientHttpRequestFactory clientHttpRequestFactory = new SimpleClientHttpRequestFactory();
-		ClientHttpRequest request = clientHttpRequestFactory.createRequest(new URI(
-				"http://localhost:" + context.getWebServer().getPort() + resourcePath),
-				HttpMethod.GET);
+		ClientHttpRequest request = clientHttpRequestFactory.createRequest(
+				new URI("http://localhost:" + context.getWebServer().getPort() + resourcePath), HttpMethod.GET);
 		try (ClientHttpResponse response = request.execute()) {
-			String actual = StreamUtils.copyToString(response.getBody(),
-					StandardCharsets.UTF_8);
+			String actual = StreamUtils.copyToString(response.getBody(), StandardCharsets.UTF_8);
 			assertThat(actual).isEqualTo("Hello World");
 		}
 	}
 
 	// Simple main method for testing in a browser
 	@SuppressWarnings("resource")
-	public static void main(String[] args) {
-		new AnnotationConfigServletWebServerApplicationContext(
-				JettyServletWebServerFactory.class, Config.class);
+	static void main(String[] args) {
+		new AnnotationConfigServletWebServerApplicationContext(JettyServletWebServerFactory.class, Config.class);
 	}
 
 	@Configuration(proxyBeanMethods = false)
 	@Import(Config.class)
-	public static class TomcatConfig {
+	static class TomcatConfig {
 
 		@Bean
-		public ServletWebServerFactory webServerFactory() {
+		ServletWebServerFactory webServerFactory() {
 			return new TomcatServletWebServerFactory(0);
 		}
 
@@ -128,10 +121,10 @@ public class ServletWebServerMvcIntegrationTests {
 
 	@Configuration(proxyBeanMethods = false)
 	@Import(Config.class)
-	public static class JettyConfig {
+	static class JettyConfig {
 
 		@Bean
-		public ServletWebServerFactory webServerFactory() {
+		ServletWebServerFactory webServerFactory() {
 			return new JettyServletWebServerFactory(0);
 		}
 
@@ -139,10 +132,10 @@ public class ServletWebServerMvcIntegrationTests {
 
 	@Configuration(proxyBeanMethods = false)
 	@Import(Config.class)
-	public static class UndertowConfig {
+	static class UndertowConfig {
 
 		@Bean
-		public ServletWebServerFactory webServerFactory() {
+		ServletWebServerFactory webServerFactory() {
 			return new UndertowServletWebServerFactory(0);
 		}
 
@@ -150,10 +143,10 @@ public class ServletWebServerMvcIntegrationTests {
 
 	@Configuration(proxyBeanMethods = false)
 	@EnableWebMvc
-	public static class Config {
+	static class Config {
 
 		@Bean
-		public DispatcherServlet dispatcherServlet() {
+		DispatcherServlet dispatcherServlet() {
 			return new DispatcherServlet();
 			// Alternatively you can use ServletContextInitializer beans including
 			// ServletRegistration and FilterRegistration. Read the
@@ -161,7 +154,7 @@ public class ServletWebServerMvcIntegrationTests {
 		}
 
 		@Bean
-		public HelloWorldController helloWorldController() {
+		HelloWorldController helloWorldController() {
 			return new HelloWorldController();
 		}
 
@@ -170,50 +163,48 @@ public class ServletWebServerMvcIntegrationTests {
 	@Configuration(proxyBeanMethods = false)
 	@EnableWebMvc
 	@PropertySource("classpath:/org/springframework/boot/web/servlet/context/conf.properties")
-	public static class AdvancedConfig {
+	static class AdvancedConfig {
 
 		private final Environment env;
 
-		public AdvancedConfig(Environment env) {
+		AdvancedConfig(Environment env) {
 			this.env = env;
 		}
 
 		@Bean
-		public ServletWebServerFactory webServerFactory() {
+		ServletWebServerFactory webServerFactory() {
 			JettyServletWebServerFactory factory = new JettyServletWebServerFactory(0);
 			factory.setContextPath(this.env.getProperty("context"));
 			return factory;
 		}
 
 		@Bean
-		public ServletRegistrationBean<DispatcherServlet> dispatcherRegistration(
-				DispatcherServlet dispatcherServlet) {
-			ServletRegistrationBean<DispatcherServlet> registration = new ServletRegistrationBean<>(
-					dispatcherServlet);
+		ServletRegistrationBean<DispatcherServlet> dispatcherRegistration(DispatcherServlet dispatcherServlet) {
+			ServletRegistrationBean<DispatcherServlet> registration = new ServletRegistrationBean<>(dispatcherServlet);
 			registration.addUrlMappings("/spring/*");
 			return registration;
 		}
 
 		@Bean
-		public DispatcherServlet dispatcherServlet() {
+		DispatcherServlet dispatcherServlet() {
 			DispatcherServlet dispatcherServlet = new DispatcherServlet();
 			// Can configure dispatcher servlet here as would usually do via init-params
 			return dispatcherServlet;
 		}
 
 		@Bean
-		public HelloWorldController helloWorldController() {
+		HelloWorldController helloWorldController() {
 			return new HelloWorldController();
 		}
 
 	}
 
 	@Controller
-	public static class HelloWorldController {
+	static class HelloWorldController {
 
 		@RequestMapping("/hello")
 		@ResponseBody
-		public String sayHello() {
+		String sayHello() {
 			return "Hello World";
 		}
 

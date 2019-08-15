@@ -40,12 +40,11 @@ class CompoundConfigurationTableEntry extends ConfigurationTableEntry {
 	}
 
 	void addConfigurationKeys(ConfigurationMetadataProperty... properties) {
-		Stream.of(properties).map(ConfigurationMetadataProperty::getId)
-				.forEach(this.configurationKeys::add);
+		Stream.of(properties).map(ConfigurationMetadataProperty::getId).forEach(this.configurationKeys::add);
 	}
 
 	@Override
-	public void write(AsciidocBuilder builder) {
+	void write(AsciidocBuilder builder) {
 		builder.append("|");
 		this.configurationKeys.forEach(builder::appendKey);
 		builder.newLine().appendln("|").appendln("|+++", this.description, "+++");

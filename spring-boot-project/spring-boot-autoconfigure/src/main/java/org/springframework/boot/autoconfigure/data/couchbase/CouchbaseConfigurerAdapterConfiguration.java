@@ -43,11 +43,9 @@ class CouchbaseConfigurerAdapterConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public CouchbaseConfigurer springBootCouchbaseConfigurer() throws Exception {
-		return new SpringBootCouchbaseConfigurer(
-				this.configuration.couchbaseEnvironment(),
-				this.configuration.couchbaseCluster(),
-				this.configuration.couchbaseClusterInfo(),
+	CouchbaseConfigurer springBootCouchbaseConfigurer() throws Exception {
+		return new SpringBootCouchbaseConfigurer(this.configuration.couchbaseEnvironment(),
+				this.configuration.couchbaseCluster(), this.configuration.couchbaseClusterInfo(),
 				this.configuration.couchbaseClient());
 	}
 

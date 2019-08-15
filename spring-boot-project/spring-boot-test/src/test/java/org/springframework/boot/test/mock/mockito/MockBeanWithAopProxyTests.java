@@ -47,13 +47,13 @@ import static org.mockito.Mockito.verify;
  * @see <a href="https://github.com/spring-projects/spring-boot/issues/5837">5837</a>
  */
 @ExtendWith(SpringExtension.class)
-public class MockBeanWithAopProxyTests {
+class MockBeanWithAopProxyTests {
 
 	@MockBean
 	private DateService dateService;
 
 	@Test
-	public void verifyShouldUseProxyTarget() {
+	void verifyShouldUseProxyTarget() {
 		given(this.dateService.getDate(false)).willReturn(1L);
 		Long d1 = this.dateService.getDate(false);
 		assertThat(d1).isEqualTo(1L);
@@ -71,14 +71,14 @@ public class MockBeanWithAopProxyTests {
 	static class Config {
 
 		@Bean
-		public CacheResolver cacheResolver(CacheManager cacheManager) {
+		CacheResolver cacheResolver(CacheManager cacheManager) {
 			SimpleCacheResolver resolver = new SimpleCacheResolver();
 			resolver.setCacheManager(cacheManager);
 			return resolver;
 		}
 
 		@Bean
-		public ConcurrentMapCacheManager cacheManager() {
+		ConcurrentMapCacheManager cacheManager() {
 			ConcurrentMapCacheManager cacheManager = new ConcurrentMapCacheManager();
 			cacheManager.setCacheNames(Arrays.asList("test"));
 			return cacheManager;
@@ -90,7 +90,7 @@ public class MockBeanWithAopProxyTests {
 	static class DateService {
 
 		@Cacheable(cacheNames = "test")
-		public Long getDate(boolean argument) {
+		Long getDate(boolean argument) {
 			return System.nanoTime();
 		}
 

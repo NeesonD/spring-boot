@@ -45,19 +45,16 @@ class RestTemplateMetricsConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(RestTemplateExchangeTagsProvider.class)
-	public DefaultRestTemplateExchangeTagsProvider restTemplateExchangeTagsProvider() {
+	DefaultRestTemplateExchangeTagsProvider restTemplateExchangeTagsProvider() {
 		return new DefaultRestTemplateExchangeTagsProvider();
 	}
 
 	@Bean
-	public MetricsRestTemplateCustomizer metricsRestTemplateCustomizer(
-			MeterRegistry meterRegistry,
-			RestTemplateExchangeTagsProvider restTemplateExchangeTagsProvider,
-			MetricsProperties properties) {
+	MetricsRestTemplateCustomizer metricsRestTemplateCustomizer(MeterRegistry meterRegistry,
+			RestTemplateExchangeTagsProvider restTemplateExchangeTagsProvider, MetricsProperties properties) {
 		ClientRequest request = properties.getWeb().getClient().getRequest();
-		return new MetricsRestTemplateCustomizer(meterRegistry,
-				restTemplateExchangeTagsProvider, request.getMetricName(),
-				request.getAutotime());
+		return new MetricsRestTemplateCustomizer(meterRegistry, restTemplateExchangeTagsProvider,
+				request.getMetricName(), request.getAutotime());
 	}
 
 }

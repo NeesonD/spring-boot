@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.TestTemplate;
 import org.junit.jupiter.api.extension.Extension;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.TestTemplateInvocationContext;
@@ -30,22 +31,19 @@ import org.springframework.boot.gradle.testkit.GradleBuildExtension;
 
 /**
  * {@link Extension} that runs {@link TestTemplate templated tests} against multiple
- * versions of Gradle. Test classes using the extension must have non-privaten and
+ * versions of Gradle. Test classes using the extension must have a non-private and
  * non-final {@link GradleBuild} field named {@code gradleBuild}.
  *
  * @author Andy Wilkinson
  */
-public final class GradleCompatibilityExtension
-		implements TestTemplateInvocationContextProvider {
+public final class GradleCompatibilityExtension implements TestTemplateInvocationContextProvider {
 
-	private static final List<String> GRADLE_VERSIONS = Arrays.asList("default", "5.0",
-			"5.1.1", "5.2.1", "5.3.1", "5.4.1");
+	private static final List<String> GRADLE_VERSIONS = Arrays.asList("default", "5.0", "5.1.1", "5.2.1", "5.3.1",
+			"5.4.1", "5.5.1");
 
 	@Override
-	public Stream<TestTemplateInvocationContext> provideTestTemplateInvocationContexts(
-			ExtensionContext context) {
-		return GRADLE_VERSIONS.stream()
-				.map(GradleVersionTestTemplateInvocationContext::new);
+	public Stream<TestTemplateInvocationContext> provideTestTemplateInvocationContexts(ExtensionContext context) {
+		return GRADLE_VERSIONS.stream().map(GradleVersionTestTemplateInvocationContext::new);
 	}
 
 	@Override
@@ -53,8 +51,7 @@ public final class GradleCompatibilityExtension
 		return true;
 	}
 
-	private static final class GradleVersionTestTemplateInvocationContext
-			implements TestTemplateInvocationContext {
+	private static final class GradleVersionTestTemplateInvocationContext implements TestTemplateInvocationContext {
 
 		private final String gradleVersion;
 
@@ -73,8 +70,7 @@ public final class GradleCompatibilityExtension
 			if (!this.gradleVersion.equals("default")) {
 				gradleBuild.gradleVersion(this.gradleVersion);
 			}
-			return Arrays.asList(new GradleBuildFieldSetter(gradleBuild),
-					new GradleBuildExtension());
+			return Arrays.asList(new GradleBuildFieldSetter(gradleBuild), new GradleBuildExtension());
 		}
 
 	}

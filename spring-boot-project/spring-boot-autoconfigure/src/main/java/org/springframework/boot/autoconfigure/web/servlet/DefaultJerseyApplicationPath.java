@@ -30,6 +30,7 @@ import org.springframework.util.StringUtils;
  * {@link JerseyProperties} or the {@code @ApplicationPath} annotation.
  *
  * @author Madhura Bhave
+ * @since 2.1.0
  */
 public class DefaultJerseyApplicationPath implements JerseyApplicationPath {
 
@@ -52,10 +53,8 @@ public class DefaultJerseyApplicationPath implements JerseyApplicationPath {
 			return this.applicationPath;
 		}
 		// Jersey doesn't like to be the default servlet, so map to /* as a fallback
-		return MergedAnnotations
-				.from(this.config.getApplication().getClass(), SearchStrategy.EXHAUSTIVE)
-				.get(ApplicationPath.class).getValue(MergedAnnotation.VALUE, String.class)
-				.orElse("/*");
+		return MergedAnnotations.from(this.config.getApplication().getClass(), SearchStrategy.TYPE_HIERARCHY)
+				.get(ApplicationPath.class).getValue(MergedAnnotation.VALUE, String.class).orElse("/*");
 	}
 
 }

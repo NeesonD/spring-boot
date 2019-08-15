@@ -27,22 +27,21 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * @author Phillip Webb
  */
-public class AutoConfigurationsTests {
+class AutoConfigurationsTests {
 
 	@Test
-	public void ofShouldCreateOrderedConfigurations() {
-		Configurations configurations = AutoConfigurations.of(AutoConfigureA.class,
-				AutoConfigureB.class);
-		assertThat(Configurations.getClasses(configurations))
-				.containsExactly(AutoConfigureB.class, AutoConfigureA.class);
+	void ofShouldCreateOrderedConfigurations() {
+		Configurations configurations = AutoConfigurations.of(AutoConfigureA.class, AutoConfigureB.class);
+		assertThat(Configurations.getClasses(configurations)).containsExactly(AutoConfigureB.class,
+				AutoConfigureA.class);
 	}
 
 	@AutoConfigureAfter(AutoConfigureB.class)
-	public static class AutoConfigureA {
+	static class AutoConfigureA {
 
 	}
 
-	public static class AutoConfigureB {
+	static class AutoConfigureB {
 
 	}
 

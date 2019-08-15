@@ -38,11 +38,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @DirtiesContext
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, properties = { "value=123" })
-public class SpringBootTestWebEnvironmentRandomPortTests
-		extends AbstractSpringBootTestWebServerWebEnvironmentTests {
+class SpringBootTestWebEnvironmentRandomPortTests extends AbstractSpringBootTestWebServerWebEnvironmentTests {
 
 	@Test
-	public void testRestTemplateShouldUseBuilder() {
+	void testRestTemplateShouldUseBuilder() {
 		assertThat(getRestTemplate().getRestTemplate().getMessageConverters())
 				.hasAtLeastOneElementOfType(MyConverter.class);
 	}
@@ -50,18 +49,17 @@ public class SpringBootTestWebEnvironmentRandomPortTests
 	@Configuration(proxyBeanMethods = false)
 	@EnableWebMvc
 	@RestController
-	protected static class Config extends AbstractConfig {
+	static class Config extends AbstractConfig {
 
 		@Bean
-		public RestTemplateBuilder restTemplateBuilder() {
-			return new RestTemplateBuilder()
-					.additionalMessageConverters(new MyConverter());
+		RestTemplateBuilder restTemplateBuilder() {
+			return new RestTemplateBuilder().additionalMessageConverters(new MyConverter());
 
 		}
 
 	}
 
-	private static class MyConverter extends StringHttpMessageConverter {
+	static class MyConverter extends StringHttpMessageConverter {
 
 	}
 

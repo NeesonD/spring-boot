@@ -38,7 +38,7 @@ public class ConfigurableDataSourceExample {
 	 * {@link DataSourceProperties}.
 	 */
 	@Configuration(proxyBeanMethods = false)
-	static class ConfigurableDataSourceConfiguration {
+	public static class ConfigurableDataSourceConfiguration {
 
 		// tag::configuration[]
 		@Bean
@@ -51,8 +51,7 @@ public class ConfigurableDataSourceExample {
 		@Bean
 		@ConfigurationProperties("app.datasource.configuration")
 		public HikariDataSource dataSource(DataSourceProperties properties) {
-			return properties.initializeDataSourceBuilder().type(HikariDataSource.class)
-					.build();
+			return properties.initializeDataSourceBuilder().type(HikariDataSource.class).build();
 		}
 		// end::configuration[]
 

@@ -53,15 +53,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT,
 		properties = "spring.jackson.default-property-inclusion=non_null")
 @DirtiesContext
-public class JerseyAutoConfigurationCustomObjectMapperProviderTests {
+class JerseyAutoConfigurationCustomObjectMapperProviderTests {
 
 	@Autowired
 	private TestRestTemplate restTemplate;
 
 	@Test
-	public void contextLoads() {
-		ResponseEntity<String> response = this.restTemplate.getForEntity("/rest/message",
-				String.class);
+	void contextLoads() {
+		ResponseEntity<String> response = this.restTemplate.getForEntity("/rest/message", String.class);
 		assertThat(HttpStatus.OK).isEqualTo(response.getStatusCode());
 		assertThat("{\"subject\":\"Jersey\"}").isEqualTo(response.getBody());
 	}
@@ -71,16 +70,16 @@ public class JerseyAutoConfigurationCustomObjectMapperProviderTests {
 	@Path("/message")
 	public static class Application extends ResourceConfig {
 
+		Application() {
+			register(Application.class);
+		}
+
 		@GET
 		public Message message() {
 			return new Message("Jersey", null);
 		}
 
-		public Application() {
-			register(Application.class);
-		}
-
-		public static void main(String[] args) {
+		static void main(String[] args) {
 			SpringApplication.run(Application.class, args);
 		}
 
@@ -92,7 +91,7 @@ public class JerseyAutoConfigurationCustomObjectMapperProviderTests {
 
 		private String body;
 
-		public Message(String subject, String body) {
+		Message(String subject, String body) {
 			this.subject = subject;
 			this.body = body;
 		}
@@ -119,9 +118,8 @@ public class JerseyAutoConfigurationCustomObjectMapperProviderTests {
 	@Retention(RetentionPolicy.RUNTIME)
 	@Documented
 	@Configuration
-	@Import({ ServletWebServerFactoryAutoConfiguration.class,
-			JacksonAutoConfiguration.class, JerseyAutoConfiguration.class,
-			PropertyPlaceholderAutoConfiguration.class })
+	@Import({ ServletWebServerFactoryAutoConfiguration.class, JacksonAutoConfiguration.class,
+			JerseyAutoConfiguration.class, PropertyPlaceholderAutoConfiguration.class })
 	protected @interface MinimalWebConfiguration {
 
 	}

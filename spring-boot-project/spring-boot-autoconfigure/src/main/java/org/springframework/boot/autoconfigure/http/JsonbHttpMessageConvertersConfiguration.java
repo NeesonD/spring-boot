@@ -34,7 +34,6 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
  * Configuration for HTTP Message converters that use JSON-B.
  *
  * @author Eddú Meléndez
- * @since 2.0.0
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(Jsonb.class)
@@ -43,11 +42,11 @@ class JsonbHttpMessageConvertersConfiguration {
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnBean(Jsonb.class)
 	@Conditional(PreferJsonbOrMissingJacksonAndGsonCondition.class)
-	protected static class JsonbHttpMessageConverterConfiguration {
+	static class JsonbHttpMessageConverterConfiguration {
 
 		@Bean
 		@ConditionalOnMissingBean
-		public JsonbHttpMessageConverter jsonbHttpMessageConverter(Jsonb jsonb) {
+		JsonbHttpMessageConverter jsonbHttpMessageConverter(Jsonb jsonb) {
 			JsonbHttpMessageConverter converter = new JsonbHttpMessageConverter();
 			converter.setJsonb(jsonb);
 			return converter;
@@ -55,22 +54,19 @@ class JsonbHttpMessageConvertersConfiguration {
 
 	}
 
-	private static class PreferJsonbOrMissingJacksonAndGsonCondition
-			extends AnyNestedCondition {
+	private static class PreferJsonbOrMissingJacksonAndGsonCondition extends AnyNestedCondition {
 
 		PreferJsonbOrMissingJacksonAndGsonCondition() {
 			super(ConfigurationPhase.REGISTER_BEAN);
 		}
 
-		@ConditionalOnProperty(
-				name = HttpMessageConvertersAutoConfiguration.PREFERRED_MAPPER_PROPERTY,
+		@ConditionalOnProperty(name = HttpMessageConvertersAutoConfiguration.PREFERRED_MAPPER_PROPERTY,
 				havingValue = "jsonb")
 		static class JsonbPreferred {
 
 		}
 
-		@ConditionalOnMissingBean({ MappingJackson2HttpMessageConverter.class,
-				GsonHttpMessageConverter.class })
+		@ConditionalOnMissingBean({ MappingJackson2HttpMessageConverter.class, GsonHttpMessageConverter.class })
 		static class JacksonAndGsonMissing {
 
 		}

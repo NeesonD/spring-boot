@@ -37,22 +37,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DirtiesContext
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT,
 		properties = { "spring.main.web-application-type=reactive", "value=123" })
-public class SpringBootTestReactiveWebEnvironmentUserDefinedTestRestTemplateTests
+class SpringBootTestReactiveWebEnvironmentUserDefinedTestRestTemplateTests
 		extends AbstractSpringBootTestEmbeddedReactiveWebEnvironmentTests {
 
 	@Test
-	public void restTemplateIsUserDefined() {
-		assertThat(getContext().getBean("testRestTemplate"))
-				.isInstanceOf(RestTemplate.class);
+	void restTemplateIsUserDefined() {
+		assertThat(getContext().getBean("testRestTemplate")).isInstanceOf(RestTemplate.class);
 	}
 
 	@Configuration(proxyBeanMethods = false)
 	@EnableWebFlux
 	@RestController
-	protected static class Config extends AbstractConfig {
+	static class Config extends AbstractConfig {
 
 		@Bean
-		public RestTemplate testRestTemplate() {
+		RestTemplate testRestTemplate() {
 			return new RestTemplate();
 		}
 

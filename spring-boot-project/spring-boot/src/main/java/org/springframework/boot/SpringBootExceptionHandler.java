@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,11 +52,11 @@ class SpringBootExceptionHandler implements UncaughtExceptionHandler {
 		this.parent = parent;
 	}
 
-	public void registerLoggedException(Throwable exception) {
+	void registerLoggedException(Throwable exception) {
 		this.loggedExceptions.add(exception);
 	}
 
-	public void registerExitCode(int exitCode) {
+	void registerExitCode(int exitCode) {
 		this.exitCode = exitCode;
 	}
 
@@ -117,8 +117,7 @@ class SpringBootExceptionHandler implements UncaughtExceptionHandler {
 	/**
 	 * Thread local used to attach and track handlers.
 	 */
-	private static class LoggedExceptionHandlerThreadLocal
-			extends ThreadLocal<SpringBootExceptionHandler> {
+	private static class LoggedExceptionHandlerThreadLocal extends ThreadLocal<SpringBootExceptionHandler> {
 
 		@Override
 		protected SpringBootExceptionHandler initialValue() {

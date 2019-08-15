@@ -34,8 +34,7 @@ class SingleConfigurationTableEntry extends ConfigurationTableEntry {
 
 	SingleConfigurationTableEntry(ConfigurationMetadataProperty property) {
 		this.key = property.getId();
-		if (property.getType() != null
-				&& property.getType().startsWith("java.util.Map")) {
+		if (property.getType() != null && property.getType().startsWith("java.util.Map")) {
 			this.key += ".*";
 		}
 		this.description = property.getDescription();
@@ -54,7 +53,7 @@ class SingleConfigurationTableEntry extends ConfigurationTableEntry {
 	}
 
 	@Override
-	public void write(AsciidocBuilder builder) {
+	void write(AsciidocBuilder builder) {
 		builder.appendln("|`+", this.key, "+`");
 		writeDefaultValue(builder);
 		writeDescription(builder);
@@ -63,8 +62,7 @@ class SingleConfigurationTableEntry extends ConfigurationTableEntry {
 
 	private void writeDefaultValue(AsciidocBuilder builder) {
 		String defaultValue = (this.defaultValue != null) ? this.defaultValue : "";
-		defaultValue = defaultValue.replace("\\", "\\\\").replace("|",
-				"{vbar}" + System.lineSeparator());
+		defaultValue = defaultValue.replace("\\", "\\\\").replace("|", "{vbar}" + System.lineSeparator());
 		if (defaultValue.isEmpty()) {
 			builder.appendln("|");
 		}
@@ -78,7 +76,8 @@ class SingleConfigurationTableEntry extends ConfigurationTableEntry {
 			builder.append("|");
 		}
 		else {
-			builder.append("|+++", this.description, "+++");
+			String cleanedDescription = this.description.replace("|", "\\|");
+			builder.append("|+++", cleanedDescription, "+++");
 		}
 	}
 

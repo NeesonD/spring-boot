@@ -37,59 +37,54 @@ import static org.mockito.Mockito.mock;
  * @author Dave Syer
  * @author Stephane Nicoll
  */
-public class MongoAutoConfigurationTests {
+class MongoAutoConfigurationTests {
 
 	private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
 			.withConfiguration(AutoConfigurations.of(MongoAutoConfiguration.class));
 
 	@Test
-	public void clientExists() {
-		this.contextRunner
-				.run((context) -> assertThat(context).hasSingleBean(MongoClient.class));
+	void clientExists() {
+		this.contextRunner.run((context) -> assertThat(context).hasSingleBean(MongoClient.class));
 	}
 
 	@Test
-	public void optionsAdded() {
-		this.contextRunner.withUserConfiguration(OptionsConfig.class)
-				.run((context) -> assertThat(context.getBean(MongoClient.class)
-						.getMongoClientOptions().getSocketTimeout()).isEqualTo(300));
+	void optionsAdded() {
+		this.contextRunner.withUserConfiguration(OptionsConfig.class).run(
+				(context) -> assertThat(context.getBean(MongoClient.class).getMongoClientOptions().getSocketTimeout())
+						.isEqualTo(300));
 	}
 
 	@Test
-	public void optionsAddedButNoHost() {
-		this.contextRunner.withUserConfiguration(OptionsConfig.class)
-				.run((context) -> assertThat(context.getBean(MongoClient.class)
-						.getMongoClientOptions().getSocketTimeout()).isEqualTo(300));
+	void optionsAddedButNoHost() {
+		this.contextRunner.withUserConfiguration(OptionsConfig.class).run(
+				(context) -> assertThat(context.getBean(MongoClient.class).getMongoClientOptions().getSocketTimeout())
+						.isEqualTo(300));
 	}
 
 	@Test
-	public void optionsSslConfig() {
-		this.contextRunner.withUserConfiguration(SslOptionsConfig.class)
-				.run((context) -> {
-					assertThat(context).hasSingleBean(MongoClient.class);
-					MongoClient mongo = context.getBean(MongoClient.class);
-					MongoClientOptions options = mongo.getMongoClientOptions();
-					assertThat(options.isSslEnabled()).isTrue();
-					assertThat(options.getSocketFactory())
-							.isSameAs(context.getBean("mySocketFactory"));
-				});
+	void optionsSslConfig() {
+		this.contextRunner.withUserConfiguration(SslOptionsConfig.class).run((context) -> {
+			assertThat(context).hasSingleBean(MongoClient.class);
+			MongoClient mongo = context.getBean(MongoClient.class);
+			MongoClientOptions options = mongo.getMongoClientOptions();
+			assertThat(options.isSslEnabled()).isTrue();
+			assertThat(options.getSocketFactory()).isSameAs(context.getBean("mySocketFactory"));
+		});
 	}
 
 	@Test
-	public void doesNotCreateMongoClientWhenAlreadyDefined() {
-		this.contextRunner.withUserConfiguration(FallbackMongoClientConfig.class)
-				.run((context) -> {
-					assertThat(context).doesNotHaveBean(MongoClient.class);
-					assertThat(context)
-							.hasSingleBean(com.mongodb.client.MongoClient.class);
-				});
+	void doesNotCreateMongoClientWhenAlreadyDefined() {
+		this.contextRunner.withUserConfiguration(FallbackMongoClientConfig.class).run((context) -> {
+			assertThat(context).doesNotHaveBean(MongoClient.class);
+			assertThat(context).hasSingleBean(com.mongodb.client.MongoClient.class);
+		});
 	}
 
 	@Configuration(proxyBeanMethods = false)
 	static class OptionsConfig {
 
 		@Bean
-		public MongoClientOptions mongoOptions() {
+		MongoClientOptions mongoOptions() {
 			return MongoClientOptions.builder().socketTimeout(300).build();
 		}
 
@@ -99,13 +94,12 @@ public class MongoAutoConfigurationTests {
 	static class SslOptionsConfig {
 
 		@Bean
-		public MongoClientOptions mongoClientOptions(SocketFactory socketFactory) {
-			return MongoClientOptions.builder().sslEnabled(true)
-					.socketFactory(socketFactory).build();
+		MongoClientOptions mongoClientOptions(SocketFactory socketFactory) {
+			return MongoClientOptions.builder().sslEnabled(true).socketFactory(socketFactory).build();
 		}
 
 		@Bean
-		public SocketFactory mySocketFactory() {
+		SocketFactory mySocketFactory() {
 			return mock(SocketFactory.class);
 		}
 

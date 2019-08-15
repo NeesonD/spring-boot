@@ -33,35 +33,34 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * @author Phillip Webb
  */
-public class AutoConfigurationReproTests {
+class AutoConfigurationReproTests {
 
 	private ConfigurableApplicationContext context;
 
 	@AfterEach
-	public void cleanup() {
+	void cleanup() {
 		if (this.context != null) {
 			this.context.close();
 		}
 	}
 
 	@Test
-	public void doesNotEarlyInitializeFactoryBeans() {
+	void doesNotEarlyInitializeFactoryBeans() {
 		SpringApplication application = new SpringApplication(EarlyInitConfig.class,
-				PropertySourcesPlaceholderConfigurer.class,
-				ServletWebServerFactoryAutoConfiguration.class);
+				PropertySourcesPlaceholderConfigurer.class, ServletWebServerFactoryAutoConfiguration.class);
 		this.context = application.run("--server.port=0");
 		String bean = (String) this.context.getBean("earlyInit");
 		assertThat(bean).isEqualTo("bucket");
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	public static class Config {
+	static class Config {
 
 	}
 
 	@Configuration(proxyBeanMethods = false)
 	@ImportResource("classpath:/early-init-test.xml")
-	public static class EarlyInitConfig {
+	static class EarlyInitConfig {
 
 	}
 

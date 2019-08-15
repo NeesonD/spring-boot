@@ -16,7 +16,7 @@
 
 package org.springframework.boot.diagnostics.analyzer;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.diagnostics.FailureAnalysis;
 import org.springframework.boot.diagnostics.FailureAnalyzer;
@@ -29,25 +29,23 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Tests for {@link BeanNotOfRequiredTypeFailureAnalyzer}.
  *
  * @author Andy Wilkinson
  */
-public class BeanNotOfRequiredTypeFailureAnalyzerTests {
+class BeanNotOfRequiredTypeFailureAnalyzerTests {
 
 	private final FailureAnalyzer analyzer = new BeanNotOfRequiredTypeFailureAnalyzer();
 
 	@Test
-	public void jdkProxyCausesInjectionFailure() {
+	void jdkProxyCausesInjectionFailure() {
 		FailureAnalysis analysis = performAnalysis(JdkProxyConfiguration.class);
 		assertThat(analysis.getDescription()).startsWith("The bean 'asyncBean'");
-		assertThat(analysis.getDescription())
-				.contains("'" + AsyncBean.class.getName() + "'");
-		assertThat(analysis.getDescription())
-				.endsWith(String.format("%s%n", SomeInterface.class.getName()));
+		assertThat(analysis.getDescription()).contains("'" + AsyncBean.class.getName() + "'");
+		assertThat(analysis.getDescription()).endsWith(String.format("%s%n", SomeInterface.class.getName()));
 	}
 
 	private FailureAnalysis performAnalysis(Class<?> configuration) {
@@ -57,8 +55,7 @@ public class BeanNotOfRequiredTypeFailureAnalyzerTests {
 	}
 
 	private Exception createFailure(Class<?> configuration) {
-		try (ConfigurableApplicationContext context = new AnnotationConfigApplicationContext(
-				configuration)) {
+		try (ConfigurableApplicationContext context = new AnnotationConfigApplicationContext(configuration)) {
 			fail("Expected failure did not occur");
 			return null;
 		}
@@ -73,7 +70,7 @@ public class BeanNotOfRequiredTypeFailureAnalyzerTests {
 	static class JdkProxyConfiguration {
 
 		@Bean
-		public AsyncBean asyncBean() {
+		AsyncBean asyncBean() {
 			return new AsyncBean();
 		}
 
@@ -83,7 +80,7 @@ public class BeanNotOfRequiredTypeFailureAnalyzerTests {
 	static class UserConfiguration {
 
 		@Bean
-		public AsyncBeanUser user(AsyncBean bean) {
+		AsyncBeanUser user(AsyncBean bean) {
 			return new AsyncBeanUser(bean);
 		}
 
@@ -92,7 +89,7 @@ public class BeanNotOfRequiredTypeFailureAnalyzerTests {
 	static class AsyncBean implements SomeInterface {
 
 		@Async
-		public void foo() {
+		void foo() {
 
 		}
 

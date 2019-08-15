@@ -21,7 +21,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.context.properties.scan.valid.b.BScanConfiguration;
 
 /**
- * Used for testing {@link ConfigurationProperties} scanning.
+ * Used for testing {@link ConfigurationProperties @ConfigurationProperties} scanning.
  *
  * @author Madhura Bhave
  */
@@ -29,14 +29,12 @@ import org.springframework.boot.context.properties.scan.valid.b.BScanConfigurati
 public class ConfigurationPropertiesScanConfiguration {
 
 	@ConfigurationPropertiesScan
-	@EnableConfigurationProperties({
-			ConfigurationPropertiesScanConfiguration.FooProperties.class })
+	@EnableConfigurationProperties({ ConfigurationPropertiesScanConfiguration.FooProperties.class })
 	public static class TestConfiguration {
 
 	}
 
-	@ConfigurationPropertiesScan(
-			basePackages = "org.springframework.boot.context.properties.scan.valid.a",
+	@ConfigurationPropertiesScan(basePackages = "org.springframework.boot.context.properties.scan.valid.a",
 			basePackageClasses = BScanConfiguration.class)
 	public static class DifferentPackageConfiguration {
 
@@ -48,23 +46,20 @@ public class ConfigurationPropertiesScanConfiguration {
 	}
 
 	@ConfigurationProperties(prefix = "bar")
-	public static class BarProperties {
+	static class BarProperties {
 
-		public BarProperties(String foo) {
-
+		BarProperties(String foo) {
 		}
 
 	}
 
 	@ConfigurationProperties(prefix = "bing")
-	public static class BingProperties {
+	static class BingProperties {
 
-		public BingProperties() {
-
+		BingProperties() {
 		}
 
-		public BingProperties(String foo) {
-
+		BingProperties(String foo) {
 		}
 
 	}

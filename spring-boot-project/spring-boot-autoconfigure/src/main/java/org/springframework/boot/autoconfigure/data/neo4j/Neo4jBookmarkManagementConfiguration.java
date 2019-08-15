@@ -44,23 +44,21 @@ import org.springframework.web.context.WebApplicationContext;
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass({ Caffeine.class, CaffeineCacheManager.class })
 @ConditionalOnMissingBean(BookmarkManager.class)
-@ConditionalOnBean({ BeanFactoryBookmarkOperationAdvisor.class,
-		BookmarkInterceptor.class })
+@ConditionalOnBean({ BeanFactoryBookmarkOperationAdvisor.class, BookmarkInterceptor.class })
 class Neo4jBookmarkManagementConfiguration {
 
 	private static final String BOOKMARK_MANAGER_BEAN_NAME = "bookmarkManager";
 
 	@Bean(BOOKMARK_MANAGER_BEAN_NAME)
 	@ConditionalOnWebApplication
-	@Scope(value = WebApplicationContext.SCOPE_REQUEST,
-			proxyMode = ScopedProxyMode.INTERFACES)
-	public BookmarkManager requestScopedBookmarkManager() {
+	@Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.INTERFACES)
+	BookmarkManager requestScopedBookmarkManager() {
 		return new CaffeineBookmarkManager();
 	}
 
 	@Bean(BOOKMARK_MANAGER_BEAN_NAME)
 	@ConditionalOnNotWebApplication
-	public BookmarkManager singletonScopedBookmarkManager() {
+	BookmarkManager singletonScopedBookmarkManager() {
 		return new CaffeineBookmarkManager();
 	}
 

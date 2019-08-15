@@ -16,6 +16,7 @@
 
 package org.springframework.boot.web.embedded.tomcat;
 
+import java.net.BindException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,6 +38,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.naming.ContextBindings;
 
+import org.springframework.boot.web.server.PortInUseException;
 import org.springframework.boot.web.server.WebServer;
 import org.springframework.boot.web.server.WebServerException;
 import org.springframework.util.Assert;
@@ -94,8 +96,7 @@ public class TomcatWebServer implements WebServer {
 
 				Context context = findContext();
 				context.addLifecycleListener((event) -> {
-					if (context.equals(event.getSource())
-							&& Lifecycle.START_EVENT.equals(event.getType())) {
+					if (context.equals(event.getSource()) && Lifecycle.START_EVENT.equals(event.getType())) {
 						// Remove service connectors so that protocol binding doesn't
 						// happen when the service is started.
 						removeServiceConnectors();
@@ -109,8 +110,7 @@ public class TomcatWebServer implements WebServer {
 				rethrowDeferredStartupExceptions();
 
 				try {
-					ContextBindings.bindClassLoader(context, context.getNamingToken(),
-							getClass().getClassLoader());
+					ContextBindings.bindClassLoader(context, context.getNamingToken(), getClass().getClassLoader());
 				}
 				catch (NamingException ex) {
 					// Naming is not enabled. Continue
@@ -159,8 +159,7 @@ public class TomcatWebServer implements WebServer {
 		Container[] children = this.tomcat.getHost().findChildren();
 		for (Container container : children) {
 			if (container instanceof TomcatEmbeddedContext) {
-				TomcatStarter tomcatStarter = ((TomcatEmbeddedContext) container)
-						.getStarter();
+				TomcatStarter tomcatStarter = ((TomcatEmbeddedContext) container).getStarter();
 				if (tomcatStarter != null) {
 					Exception exception = tomcatStarter.getStartUpException();
 					if (exception != null) {
@@ -202,21 +201,22 @@ public class TomcatWebServer implements WebServer {
 				}
 				checkThatConnectorsHaveStarted();
 				this.started = true;
-				logger.info("Tomcat started on port(s): " + getPortsDescription(true)
-						+ " with context path '" + getContextPath() + "'");
+				logger.info("Tomcat started on port(s): " + getPortsDescription(true) + " with context path '"
+						+ getContextPath() + "'");
 			}
 			catch (ConnectorStartFailedException ex) {
 				stopSilently();
 				throw ex;
 			}
 			catch (Exception ex) {
-				throw new WebServerException("Unable to start embedded Tomcat server",
-						ex);
+				if (findBindException(ex) != null) {
+					throw new PortInUseException(this.tomcat.getConnector().getPort());
+				}
+				throw new WebServerException("Unable to start embedded Tomcat server", ex);
 			}
 			finally {
 				Context context = findContext();
-				ContextBindings.unbindClassLoader(context, context.getNamingToken(),
-						getClass().getClassLoader());
+				ContextBindings.unbindClassLoader(context, context.getNamingToken(), getClass().getClassLoader());
 			}
 		}
 	}
@@ -232,6 +232,16 @@ public class TomcatWebServer implements WebServer {
 		if (LifecycleState.FAILED.equals(connector.getState())) {
 			throw new ConnectorStartFailedException(connector.getPort());
 		}
+	}
+
+	private BindException findBindException(Throwable ex) {
+		if (ex == null) {
+			return null;
+		}
+		if (ex instanceof BindException) {
+			return (BindException) ex;
+		}
+		return findBindException(ex.getCause());
 	}
 
 	private void stopSilently() {
@@ -253,8 +263,7 @@ public class TomcatWebServer implements WebServer {
 	}
 
 	private void stopTomcat() throws LifecycleException {
-		if (Thread.currentThread()
-				.getContextClassLoader() instanceof TomcatEmbeddedWebappClassLoader) {
+		if (Thread.currentThread().getContextClassLoader() instanceof TomcatEmbeddedWebappClassLoader) {
 			Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
 		}
 		this.tomcat.stop();
@@ -297,8 +306,7 @@ public class TomcatWebServer implements WebServer {
 			if (ex instanceof WebServerException) {
 				throw (WebServerException) ex;
 			}
-			throw new WebServerException("Unable to start embedded Tomcat connectors",
-					ex);
+			throw new WebServerException("Unable to start embedded Tomcat connectors", ex);
 		}
 	}
 
@@ -353,10 +361,9 @@ public class TomcatWebServer implements WebServer {
 	}
 
 	private String getContextPath() {
-		return Arrays.stream(this.tomcat.getHost().findChildren())
-				.filter(TomcatEmbeddedContext.class::isInstance)
-				.map(TomcatEmbeddedContext.class::cast)
-				.map(TomcatEmbeddedContext::getPath).collect(Collectors.joining(" "));
+		return Arrays.stream(this.tomcat.getHost().findChildren()).filter(TomcatEmbeddedContext.class::isInstance)
+				.map(TomcatEmbeddedContext.class::cast).map(TomcatEmbeddedContext::getPath)
+				.collect(Collectors.joining(" "));
 	}
 
 	/**

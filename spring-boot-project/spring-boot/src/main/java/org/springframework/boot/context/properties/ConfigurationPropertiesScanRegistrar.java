@@ -22,6 +22,7 @@ import java.util.Set;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.boot.context.TypeExcludeFilter;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
@@ -38,8 +39,8 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
 /**
- * {@link ImportBeanDefinitionRegistrar} for registering {@link ConfigurationProperties}
- * bean definitions via scanning.
+ * {@link ImportBeanDefinitionRegistrar} for registering
+ * {@link ConfigurationProperties @ConfigurationProperties} bean definitions via scanning.
  *
  * @author Madhura Bhave
  */
@@ -51,15 +52,14 @@ class ConfigurationPropertiesScanRegistrar
 	private ResourceLoader resourceLoader;
 
 	@Override
-	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata,
-			BeanDefinitionRegistry registry) {
+	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
 		Set<String> packagesToScan = getPackagesToScan(importingClassMetadata);
 		register(registry, (ConfigurableListableBeanFactory) registry, packagesToScan);
 	}
 
 	private Set<String> getPackagesToScan(AnnotationMetadata metadata) {
-		AnnotationAttributes attributes = AnnotationAttributes.fromMap(metadata
-				.getAnnotationAttributes(ConfigurationPropertiesScan.class.getName()));
+		AnnotationAttributes attributes = AnnotationAttributes
+				.fromMap(metadata.getAnnotationAttributes(ConfigurationPropertiesScan.class.getName()));
 		String[] basePackages = attributes.getStringArray("basePackages");
 		Class<?>[] basePackageClasses = attributes.getClassArray("basePackageClasses");
 		Set<String> packagesToScan = new LinkedHashSet<>(Arrays.asList(basePackages));
@@ -72,18 +72,20 @@ class ConfigurationPropertiesScanRegistrar
 		return packagesToScan;
 	}
 
-	protected void register(BeanDefinitionRegistry registry,
-			ConfigurableListableBeanFactory beanFactory, Set<String> packagesToScan) {
+	protected void register(BeanDefinitionRegistry registry, ConfigurableListableBeanFactory beanFactory,
+			Set<String> packagesToScan) {
 		scan(packagesToScan, beanFactory, registry);
 	}
 
 	protected void scan(Set<String> packages, ConfigurableListableBeanFactory beanFactory,
 			BeanDefinitionRegistry registry) {
-		ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
-				false);
+		ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
 		scanner.setEnvironment(this.environment);
 		scanner.setResourceLoader(this.resourceLoader);
 		scanner.addIncludeFilter(new AnnotationTypeFilter(ConfigurationProperties.class));
+		TypeExcludeFilter typeExcludeFilter = new TypeExcludeFilter();
+		typeExcludeFilter.setBeanFactory(beanFactory);
+		scanner.addExcludeFilter(typeExcludeFilter);
 		for (String basePackage : packages) {
 			if (StringUtils.hasText(basePackage)) {
 				scan(beanFactory, registry, scanner, basePackage);
@@ -91,17 +93,14 @@ class ConfigurationPropertiesScanRegistrar
 		}
 	}
 
-	private void scan(ConfigurableListableBeanFactory beanFactory,
-			BeanDefinitionRegistry registry,
-			ClassPathScanningCandidateComponentProvider scanner, String basePackage)
-			throws LinkageError {
+	private void scan(ConfigurableListableBeanFactory beanFactory, BeanDefinitionRegistry registry,
+			ClassPathScanningCandidateComponentProvider scanner, String basePackage) throws LinkageError {
 		for (BeanDefinition candidate : scanner.findCandidateComponents(basePackage)) {
 			String beanClassName = candidate.getBeanClassName();
 			try {
 				Class<?> type = ClassUtils.forName(beanClassName, null);
 				validateScanConfiguration(type);
-				ConfigurationPropertiesBeanDefinitionRegistrar.register(registry,
-						beanFactory, type);
+				ConfigurationPropertiesBeanDefinitionRegistrar.register(registry, beanFactory, type);
 			}
 			catch (ClassNotFoundException ex) {
 				// Ignore
@@ -111,11 +110,9 @@ class ConfigurationPropertiesScanRegistrar
 
 	private void validateScanConfiguration(Class<?> type) {
 		MergedAnnotation<Component> component = MergedAnnotations
-				.from(type, MergedAnnotations.SearchStrategy.EXHAUSTIVE)
-				.get(Component.class);
+				.from(type, MergedAnnotations.SearchStrategy.TYPE_HIERARCHY).get(Component.class);
 		if (component.isPresent()) {
-			throw new InvalidConfigurationPropertiesException(type,
-					component.getRoot().getType());
+			throw new InvalidConfigurationPropertiesException(type, component.getRoot().getType());
 		}
 	}
 

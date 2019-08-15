@@ -37,39 +37,37 @@ import static org.mockito.Mockito.mock;
  * @author Dave Syer
  * @author Stephane Nicoll
  */
-public class ConditionalOnExpressionTests {
+class ConditionalOnExpressionTests {
 
 	private final ApplicationContextRunner contextRunner = new ApplicationContextRunner();
 
 	@Test
-	public void expressionIsTrue() {
+	void expressionIsTrue() {
 		this.contextRunner.withUserConfiguration(BasicConfiguration.class)
 				.run((context) -> assertThat(context.getBean("foo")).isEqualTo("foo"));
 	}
 
 	@Test
-	public void expressionEvaluatesToTrueRegistersBean() {
+	void expressionEvaluatesToTrueRegistersBean() {
 		this.contextRunner.withUserConfiguration(MissingConfiguration.class)
 				.run((context) -> assertThat(context).doesNotHaveBean("foo"));
 	}
 
 	@Test
-	public void expressionEvaluatesToFalseDoesNotRegisterBean() {
+	void expressionEvaluatesToFalseDoesNotRegisterBean() {
 		this.contextRunner.withUserConfiguration(NullConfiguration.class)
 				.run((context) -> assertThat(context).doesNotHaveBean("foo"));
 	}
 
 	@Test
-	public void expressionEvaluationWithNoBeanFactoryDoesNotMatch() {
+	void expressionEvaluationWithNoBeanFactoryDoesNotMatch() {
 		OnExpressionCondition condition = new OnExpressionCondition();
 		MockEnvironment environment = new MockEnvironment();
 		ConditionContext conditionContext = mock(ConditionContext.class);
 		given(conditionContext.getEnvironment()).willReturn(environment);
-		ConditionOutcome outcome = condition.getMatchOutcome(conditionContext,
-				mockMetaData("invalid-spel"));
+		ConditionOutcome outcome = condition.getMatchOutcome(conditionContext, mockMetaData("invalid-spel"));
 		assertThat(outcome.isMatch()).isFalse();
-		assertThat(outcome.getMessage()).contains("invalid-spel")
-				.contains("no BeanFactory available");
+		assertThat(outcome.getMessage()).contains("invalid-spel").contains("no BeanFactory available");
 	}
 
 	private AnnotatedTypeMetadata mockMetaData(String value) {
@@ -81,10 +79,10 @@ public class ConditionalOnExpressionTests {
 
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnExpression("false")
-	protected static class MissingConfiguration {
+	static class MissingConfiguration {
 
 		@Bean
-		public String bar() {
+		String bar() {
 			return "bar";
 		}
 
@@ -92,10 +90,10 @@ public class ConditionalOnExpressionTests {
 
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnExpression("true")
-	protected static class BasicConfiguration {
+	static class BasicConfiguration {
 
 		@Bean
-		public String foo() {
+		String foo() {
 			return "foo";
 		}
 
@@ -103,10 +101,10 @@ public class ConditionalOnExpressionTests {
 
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnExpression("true ? null : false")
-	protected static class NullConfiguration {
+	static class NullConfiguration {
 
 		@Bean
-		public String foo() {
+		String foo() {
 			return "foo";
 		}
 

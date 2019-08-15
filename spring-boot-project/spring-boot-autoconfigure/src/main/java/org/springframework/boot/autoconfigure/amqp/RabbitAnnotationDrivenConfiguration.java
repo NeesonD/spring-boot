@@ -37,7 +37,6 @@ import org.springframework.context.annotation.Configuration;
  *
  * @author Stephane Nicoll
  * @author Josh Thornhill
- * @since 1.2.0
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(EnableRabbit.class)
@@ -53,8 +52,7 @@ class RabbitAnnotationDrivenConfiguration {
 
 	RabbitAnnotationDrivenConfiguration(ObjectProvider<MessageConverter> messageConverter,
 			ObjectProvider<MessageRecoverer> messageRecoverer,
-			ObjectProvider<RabbitRetryTemplateCustomizer> retryTemplateCustomizers,
-			RabbitProperties properties) {
+			ObjectProvider<RabbitRetryTemplateCustomizer> retryTemplateCustomizers, RabbitProperties properties) {
 		this.messageConverter = messageConverter;
 		this.messageRecoverer = messageRecoverer;
 		this.retryTemplateCustomizers = retryTemplateCustomizers;
@@ -63,23 +61,22 @@ class RabbitAnnotationDrivenConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public SimpleRabbitListenerContainerFactoryConfigurer simpleRabbitListenerContainerFactoryConfigurer() {
+	SimpleRabbitListenerContainerFactoryConfigurer simpleRabbitListenerContainerFactoryConfigurer() {
 		SimpleRabbitListenerContainerFactoryConfigurer configurer = new SimpleRabbitListenerContainerFactoryConfigurer();
 		configurer.setMessageConverter(this.messageConverter.getIfUnique());
 		configurer.setMessageRecoverer(this.messageRecoverer.getIfUnique());
-		configurer.setRetryTemplateCustomizers(this.retryTemplateCustomizers
-				.orderedStream().collect(Collectors.toList()));
+		configurer.setRetryTemplateCustomizers(
+				this.retryTemplateCustomizers.orderedStream().collect(Collectors.toList()));
 		configurer.setRabbitProperties(this.properties);
 		return configurer;
 	}
 
 	@Bean(name = "rabbitListenerContainerFactory")
 	@ConditionalOnMissingBean(name = "rabbitListenerContainerFactory")
-	@ConditionalOnProperty(prefix = "spring.rabbitmq.listener", name = "type",
-			havingValue = "simple", matchIfMissing = true)
-	public SimpleRabbitListenerContainerFactory simpleRabbitListenerContainerFactory(
-			SimpleRabbitListenerContainerFactoryConfigurer configurer,
-			ConnectionFactory connectionFactory) {
+	@ConditionalOnProperty(prefix = "spring.rabbitmq.listener", name = "type", havingValue = "simple",
+			matchIfMissing = true)
+	SimpleRabbitListenerContainerFactory simpleRabbitListenerContainerFactory(
+			SimpleRabbitListenerContainerFactoryConfigurer configurer, ConnectionFactory connectionFactory) {
 		SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
 		configurer.configure(factory, connectionFactory);
 		return factory;
@@ -87,23 +84,21 @@ class RabbitAnnotationDrivenConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public DirectRabbitListenerContainerFactoryConfigurer directRabbitListenerContainerFactoryConfigurer() {
+	DirectRabbitListenerContainerFactoryConfigurer directRabbitListenerContainerFactoryConfigurer() {
 		DirectRabbitListenerContainerFactoryConfigurer configurer = new DirectRabbitListenerContainerFactoryConfigurer();
 		configurer.setMessageConverter(this.messageConverter.getIfUnique());
 		configurer.setMessageRecoverer(this.messageRecoverer.getIfUnique());
-		configurer.setRetryTemplateCustomizers(this.retryTemplateCustomizers
-				.orderedStream().collect(Collectors.toList()));
+		configurer.setRetryTemplateCustomizers(
+				this.retryTemplateCustomizers.orderedStream().collect(Collectors.toList()));
 		configurer.setRabbitProperties(this.properties);
 		return configurer;
 	}
 
 	@Bean(name = "rabbitListenerContainerFactory")
 	@ConditionalOnMissingBean(name = "rabbitListenerContainerFactory")
-	@ConditionalOnProperty(prefix = "spring.rabbitmq.listener", name = "type",
-			havingValue = "direct")
-	public DirectRabbitListenerContainerFactory directRabbitListenerContainerFactory(
-			DirectRabbitListenerContainerFactoryConfigurer configurer,
-			ConnectionFactory connectionFactory) {
+	@ConditionalOnProperty(prefix = "spring.rabbitmq.listener", name = "type", havingValue = "direct")
+	DirectRabbitListenerContainerFactory directRabbitListenerContainerFactory(
+			DirectRabbitListenerContainerFactoryConfigurer configurer, ConnectionFactory connectionFactory) {
 		DirectRabbitListenerContainerFactory factory = new DirectRabbitListenerContainerFactory();
 		configurer.configure(factory, connectionFactory);
 		return factory;
@@ -111,9 +106,8 @@ class RabbitAnnotationDrivenConfiguration {
 
 	@Configuration(proxyBeanMethods = false)
 	@EnableRabbit
-	@ConditionalOnMissingBean(
-			name = RabbitListenerConfigUtils.RABBIT_LISTENER_ANNOTATION_PROCESSOR_BEAN_NAME)
-	protected static class EnableRabbitConfiguration {
+	@ConditionalOnMissingBean(name = RabbitListenerConfigUtils.RABBIT_LISTENER_ANNOTATION_PROCESSOR_BEAN_NAME)
+	static class EnableRabbitConfiguration {
 
 	}
 

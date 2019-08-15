@@ -29,6 +29,7 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
  *
  * @author Phillip Webb
  * @author Stephane Nicoll
+ * @since 1.0.0
  * @see DataSourceAutoConfiguration
  */
 @Configuration(proxyBeanMethods = false)
@@ -44,8 +45,7 @@ public class EmbeddedDataSourceConfiguration implements BeanClassLoaderAware {
 
 	@Bean(destroyMethod = "shutdown")
 	public EmbeddedDatabase dataSource(DataSourceProperties properties) {
-		return new EmbeddedDatabaseBuilder()
-				.setType(EmbeddedDatabaseConnection.get(this.classLoader).getType())
+		return new EmbeddedDatabaseBuilder().setType(EmbeddedDatabaseConnection.get(this.classLoader).getType())
 				.setName(properties.determineDatabaseName()).build();
 	}
 

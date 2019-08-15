@@ -25,7 +25,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServlet;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -39,38 +39,35 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * @author Andy Wilkinson
  */
-public class ServletContextInitializerBeansTests {
+class ServletContextInitializerBeansTests {
 
 	private ConfigurableApplicationContext context;
 
 	@Test
-	public void servletThatImplementsServletContextInitializerIsOnlyRegisteredOnce() {
+	void servletThatImplementsServletContextInitializerIsOnlyRegisteredOnce() {
 		load(ServletConfiguration.class);
 		ServletContextInitializerBeans initializerBeans = new ServletContextInitializerBeans(
 				this.context.getBeanFactory());
 		assertThat(initializerBeans.size()).isEqualTo(1);
-		assertThat(initializerBeans.iterator()).toIterable()
-				.hasOnlyElementsOfType(TestServlet.class);
+		assertThat(initializerBeans.iterator()).toIterable().hasOnlyElementsOfType(TestServlet.class);
 	}
 
 	@Test
-	public void filterThatImplementsServletContextInitializerIsOnlyRegisteredOnce() {
+	void filterThatImplementsServletContextInitializerIsOnlyRegisteredOnce() {
 		load(FilterConfiguration.class);
 		ServletContextInitializerBeans initializerBeans = new ServletContextInitializerBeans(
 				this.context.getBeanFactory());
 		assertThat(initializerBeans.size()).isEqualTo(1);
-		assertThat(initializerBeans.iterator()).toIterable()
-				.hasOnlyElementsOfType(TestFilter.class);
+		assertThat(initializerBeans.iterator()).toIterable().hasOnlyElementsOfType(TestFilter.class);
 	}
 
 	@Test
-	public void looksForInitializerBeansOfSpecifiedType() {
+	void looksForInitializerBeansOfSpecifiedType() {
 		load(TestConfiguration.class);
 		ServletContextInitializerBeans initializerBeans = new ServletContextInitializerBeans(
 				this.context.getBeanFactory(), TestServletContextInitializer.class);
 		assertThat(initializerBeans.size()).isEqualTo(1);
-		assertThat(initializerBeans.iterator()).toIterable()
-				.hasOnlyElementsOfType(TestServletContextInitializer.class);
+		assertThat(initializerBeans.iterator()).toIterable().hasOnlyElementsOfType(TestServletContextInitializer.class);
 	}
 
 	private void load(Class<?>... configuration) {
@@ -81,7 +78,7 @@ public class ServletContextInitializerBeansTests {
 	static class ServletConfiguration {
 
 		@Bean
-		public TestServlet testServlet() {
+		TestServlet testServlet() {
 			return new TestServlet();
 		}
 
@@ -91,7 +88,7 @@ public class ServletContextInitializerBeansTests {
 	static class FilterConfiguration {
 
 		@Bean
-		public TestFilter testFilter() {
+		TestFilter testFilter() {
 			return new TestFilter();
 		}
 
@@ -101,12 +98,12 @@ public class ServletContextInitializerBeansTests {
 	static class TestConfiguration {
 
 		@Bean
-		public TestServletContextInitializer testServletContextInitializer() {
+		TestServletContextInitializer testServletContextInitializer() {
 			return new TestServletContextInitializer();
 		}
 
 		@Bean
-		public OtherTestServletContextInitializer otherTestServletContextInitializer() {
+		OtherTestServletContextInitializer otherTestServletContextInitializer() {
 			return new OtherTestServletContextInitializer();
 		}
 
@@ -134,8 +131,7 @@ public class ServletContextInitializerBeansTests {
 		}
 
 		@Override
-		public void doFilter(ServletRequest request, ServletResponse response,
-				FilterChain chain) {
+		public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) {
 
 		}
 

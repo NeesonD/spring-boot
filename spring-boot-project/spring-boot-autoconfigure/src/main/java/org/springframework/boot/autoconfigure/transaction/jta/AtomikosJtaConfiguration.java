@@ -53,7 +53,6 @@ import org.springframework.util.StringUtils;
  * @author Andy Wilkinson
  * @author Stephane Nicoll
  * @author Kazuki Shimizu
- * @since 1.2.0
  */
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties({ AtomikosProperties.class, JtaProperties.class })
@@ -63,15 +62,13 @@ class AtomikosJtaConfiguration {
 
 	@Bean(initMethod = "init", destroyMethod = "shutdownWait")
 	@ConditionalOnMissingBean(UserTransactionService.class)
-	public UserTransactionServiceImp userTransactionService(
-			AtomikosProperties atomikosProperties, JtaProperties jtaProperties) {
+	UserTransactionServiceImp userTransactionService(AtomikosProperties atomikosProperties,
+			JtaProperties jtaProperties) {
 		Properties properties = new Properties();
 		if (StringUtils.hasText(jtaProperties.getTransactionManagerId())) {
-			properties.setProperty("com.atomikos.icatch.tm_unique_name",
-					jtaProperties.getTransactionManagerId());
+			properties.setProperty("com.atomikos.icatch.tm_unique_name", jtaProperties.getTransactionManagerId());
 		}
-		properties.setProperty("com.atomikos.icatch.log_base_dir",
-				getLogBaseDir(jtaProperties));
+		properties.setProperty("com.atomikos.icatch.log_base_dir", getLogBaseDir(jtaProperties));
 		properties.putAll(atomikosProperties.asProperties());
 		return new UserTransactionServiceImp(properties);
 	}
@@ -86,8 +83,7 @@ class AtomikosJtaConfiguration {
 
 	@Bean(initMethod = "init", destroyMethod = "close")
 	@ConditionalOnMissingBean
-	public UserTransactionManager atomikosTransactionManager(
-			UserTransactionService userTransactionService) throws Exception {
+	UserTransactionManager atomikosTransactionManager(UserTransactionService userTransactionService) throws Exception {
 		UserTransactionManager manager = new UserTransactionManager();
 		manager.setStartupTransactionService(false);
 		manager.setForceShutdown(true);
@@ -96,24 +92,21 @@ class AtomikosJtaConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(XADataSourceWrapper.class)
-	public AtomikosXADataSourceWrapper xaDataSourceWrapper() {
+	AtomikosXADataSourceWrapper xaDataSourceWrapper() {
 		return new AtomikosXADataSourceWrapper();
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
-	public static AtomikosDependsOnBeanFactoryPostProcessor atomikosDependsOnBeanFactoryPostProcessor() {
+	static AtomikosDependsOnBeanFactoryPostProcessor atomikosDependsOnBeanFactoryPostProcessor() {
 		return new AtomikosDependsOnBeanFactoryPostProcessor();
 	}
 
 	@Bean
-	public JtaTransactionManager transactionManager(UserTransaction userTransaction,
-			TransactionManager transactionManager,
+	JtaTransactionManager transactionManager(UserTransaction userTransaction, TransactionManager transactionManager,
 			ObjectProvider<TransactionManagerCustomizers> transactionManagerCustomizers) {
-		JtaTransactionManager jtaTransactionManager = new JtaTransactionManager(
-				userTransaction, transactionManager);
-		transactionManagerCustomizers.ifAvailable(
-				(customizers) -> customizers.customize(jtaTransactionManager));
+		JtaTransactionManager jtaTransactionManager = new JtaTransactionManager(userTransaction, transactionManager);
+		transactionManagerCustomizers.ifAvailable((customizers) -> customizers.customize(jtaTransactionManager));
 		return jtaTransactionManager;
 	}
 
@@ -123,7 +116,7 @@ class AtomikosJtaConfiguration {
 
 		@Bean
 		@ConditionalOnMissingBean(XAConnectionFactoryWrapper.class)
-		public AtomikosXAConnectionFactoryWrapper xaConnectionFactoryWrapper() {
+		AtomikosXAConnectionFactoryWrapper xaConnectionFactoryWrapper() {
 			return new AtomikosXAConnectionFactoryWrapper();
 		}
 

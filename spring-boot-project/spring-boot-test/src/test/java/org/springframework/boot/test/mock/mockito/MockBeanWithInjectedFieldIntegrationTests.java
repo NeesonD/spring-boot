@@ -33,29 +33,29 @@ import static org.mockito.BDDMockito.given;
  * @author Andy Wilkinson
  */
 @ExtendWith(SpringExtension.class)
-public class MockBeanWithInjectedFieldIntegrationTests {
+class MockBeanWithInjectedFieldIntegrationTests {
 
 	@MockBean
 	private MyService myService;
 
 	@Test
-	public void fieldInjectionIntoMyServiceMockIsNotAttempted() {
+	void fieldInjectionIntoMyServiceMockIsNotAttempted() {
 		given(this.myService.getCount()).willReturn(5);
 		assertThat(this.myService.getCount()).isEqualTo(5);
 	}
 
-	private static class MyService {
+	static class MyService {
 
 		@Autowired
 		private MyRepository repository;
 
-		public int getCount() {
+		int getCount() {
 			return this.repository.findAll().size();
 		}
 
 	}
 
-	private interface MyRepository {
+	interface MyRepository {
 
 		List<Object> findAll();
 

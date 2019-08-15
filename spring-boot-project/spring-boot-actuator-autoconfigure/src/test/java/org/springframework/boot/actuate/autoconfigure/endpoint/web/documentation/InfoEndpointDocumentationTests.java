@@ -44,40 +44,27 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *
  * @author Andy Wilkinson
  */
-public class InfoEndpointDocumentationTests extends MockMvcEndpointDocumentationTests {
+class InfoEndpointDocumentationTests extends MockMvcEndpointDocumentationTests {
 
 	@Test
-	public void info() throws Exception {
+	void info() throws Exception {
 		this.mockMvc.perform(get("/actuator/info")).andExpect(status().isOk())
 				.andDo(MockMvcRestDocumentation.document("info",
 						responseFields(beneathPath("git"),
-								fieldWithPath("branch")
-										.description("Name of the Git branch, if any."),
-								fieldWithPath("commit").description(
-										"Details of the Git commit, if any."),
-								fieldWithPath("commit.time")
-										.description("Timestamp of the commit, if any.")
+								fieldWithPath("branch").description("Name of the Git branch, if any."),
+								fieldWithPath("commit").description("Details of the Git commit, if any."),
+								fieldWithPath("commit.time").description("Timestamp of the commit, if any.")
 										.type(JsonFieldType.VARIES),
-								fieldWithPath("commit.id")
-										.description("ID of the commit, if any.")),
+								fieldWithPath("commit.id").description("ID of the commit, if any.")),
 						responseFields(beneathPath("build"),
-								fieldWithPath("artifact")
-										.description(
-												"Artifact ID of the application, if any.")
+								fieldWithPath("artifact").description("Artifact ID of the application, if any.")
 										.optional(),
-								fieldWithPath("group")
-										.description(
-												"Group ID of the application, if any.")
-										.optional(),
-								fieldWithPath("name")
-										.description("Name of the application, if any.")
+								fieldWithPath("group").description("Group ID of the application, if any.").optional(),
+								fieldWithPath("name").description("Name of the application, if any.")
 										.type(JsonFieldType.STRING).optional(),
-								fieldWithPath("version")
-										.description(
-												"Version of the application, if any.")
-										.optional(),
-								fieldWithPath("time").description(
-										"Timestamp of when the application was built, if any.")
+								fieldWithPath("version").description("Version of the application, if any.").optional(),
+								fieldWithPath("time")
+										.description("Timestamp of when the application was built, if any.")
 										.type(JsonFieldType.VARIES).optional())));
 	}
 
@@ -86,12 +73,12 @@ public class InfoEndpointDocumentationTests extends MockMvcEndpointDocumentation
 	static class TestConfiguration {
 
 		@Bean
-		public InfoEndpoint endpoint(List<InfoContributor> infoContributors) {
+		InfoEndpoint endpoint(List<InfoContributor> infoContributors) {
 			return new InfoEndpoint(infoContributors);
 		}
 
 		@Bean
-		public GitInfoContributor gitInfoContributor() {
+		GitInfoContributor gitInfoContributor() {
 			Properties properties = new Properties();
 			properties.put("branch", "master");
 			properties.put("commit.id", "df027cf1ec5aeba2d4fedd7b8c42b88dc5ce38e5");
@@ -102,7 +89,7 @@ public class InfoEndpointDocumentationTests extends MockMvcEndpointDocumentation
 		}
 
 		@Bean
-		public BuildInfoContributor buildInfoContributor() {
+		BuildInfoContributor buildInfoContributor() {
 			Properties properties = new Properties();
 			properties.put("group", "com.example");
 			properties.put("artifact", "application");

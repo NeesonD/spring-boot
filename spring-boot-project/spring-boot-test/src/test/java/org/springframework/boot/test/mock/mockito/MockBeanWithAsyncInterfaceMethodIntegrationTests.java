@@ -35,7 +35,7 @@ import static org.mockito.BDDMockito.given;
  * @author Andy Wilkinson
  */
 @ExtendWith(SpringExtension.class)
-public class MockBeanWithAsyncInterfaceMethodIntegrationTests {
+class MockBeanWithAsyncInterfaceMethodIntegrationTests {
 
 	@MockBean
 	private Transformer transformer;
@@ -44,19 +44,19 @@ public class MockBeanWithAsyncInterfaceMethodIntegrationTests {
 	private MyService service;
 
 	@Test
-	public void mockedMethodsAreNotAsync() {
+	void mockedMethodsAreNotAsync() {
 		given(this.transformer.transform("foo")).willReturn("bar");
 		assertThat(this.service.transform("foo")).isEqualTo("bar");
 	}
 
-	private interface Transformer {
+	interface Transformer {
 
 		@Async
 		String transform(String input);
 
 	}
 
-	private static class MyService {
+	static class MyService {
 
 		private final Transformer transformer;
 
@@ -64,7 +64,7 @@ public class MockBeanWithAsyncInterfaceMethodIntegrationTests {
 			this.transformer = transformer;
 		}
 
-		public String transform(String input) {
+		String transform(String input) {
 			return this.transformer.transform(input);
 		}
 
@@ -75,7 +75,7 @@ public class MockBeanWithAsyncInterfaceMethodIntegrationTests {
 	static class MyConfiguration {
 
 		@Bean
-		public MyService myService(Transformer transformer) {
+		MyService myService(Transformer transformer) {
 			return new MyService(transformer);
 		}
 

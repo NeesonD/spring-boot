@@ -48,8 +48,7 @@ import org.springframework.session.hazelcast.config.annotation.web.http.Hazelcas
 class HazelcastSessionConfiguration {
 
 	@Configuration
-	public static class SpringBootHazelcastHttpSessionConfiguration
-			extends HazelcastHttpSessionConfiguration {
+	public static class SpringBootHazelcastHttpSessionConfiguration extends HazelcastHttpSessionConfiguration {
 
 		@Autowired
 		public void customize(SessionProperties sessionProperties,
@@ -59,7 +58,8 @@ class HazelcastSessionConfiguration {
 				setMaxInactiveIntervalInSeconds((int) timeout.getSeconds());
 			}
 			setSessionMapName(hazelcastSessionProperties.getMapName());
-			setHazelcastFlushMode(hazelcastSessionProperties.getFlushMode());
+			setFlushMode(hazelcastSessionProperties.getFlushMode());
+			setSaveMode(hazelcastSessionProperties.getSaveMode());
 		}
 
 	}

@@ -29,12 +29,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * @author Dave Syer
  */
-public class ConditionalOnMissingClassTests {
+class ConditionalOnMissingClassTests {
 
 	private final AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
 
 	@Test
-	public void testVanillaOnClassCondition() {
+	void testVanillaOnClassCondition() {
 		this.context.register(BasicConfiguration.class, FooConfiguration.class);
 		this.context.refresh();
 		assertThat(this.context.containsBean("bar")).isFalse();
@@ -42,7 +42,7 @@ public class ConditionalOnMissingClassTests {
 	}
 
 	@Test
-	public void testMissingOnClassCondition() {
+	void testMissingOnClassCondition() {
 		this.context.register(MissingConfiguration.class, FooConfiguration.class);
 		this.context.refresh();
 		assertThat(this.context.containsBean("bar")).isTrue();
@@ -51,10 +51,10 @@ public class ConditionalOnMissingClassTests {
 
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnMissingClass("org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClassTests")
-	protected static class BasicConfiguration {
+	static class BasicConfiguration {
 
 		@Bean
-		public String bar() {
+		String bar() {
 			return "bar";
 		}
 
@@ -62,20 +62,20 @@ public class ConditionalOnMissingClassTests {
 
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnMissingClass("FOO")
-	protected static class MissingConfiguration {
+	static class MissingConfiguration {
 
 		@Bean
-		public String bar() {
+		String bar() {
 			return "bar";
 		}
 
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	protected static class FooConfiguration {
+	static class FooConfiguration {
 
 		@Bean
-		public String foo() {
+		String foo() {
 			return "foo";
 		}
 

@@ -31,11 +31,7 @@ import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.rsocket.messaging.RSocketStrategiesCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.ReactiveAdapterRegistry;
 import org.springframework.core.annotation.Order;
-import org.springframework.core.codec.CharSequenceEncoder;
-import org.springframework.core.codec.StringDecoder;
-import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.cbor.Jackson2CborDecoder;
 import org.springframework.http.codec.cbor.Jackson2CborEncoder;
@@ -51,23 +47,15 @@ import org.springframework.messaging.rsocket.RSocketStrategies;
  * @since 2.2.0
  */
 @Configuration(proxyBeanMethods = false)
-@ConditionalOnClass({ RSocketFactory.class, RSocketStrategies.class,
-		PooledByteBufAllocator.class })
+@ConditionalOnClass({ RSocketFactory.class, RSocketStrategies.class, PooledByteBufAllocator.class })
 @AutoConfigureAfter(JacksonAutoConfiguration.class)
 public class RSocketStrategiesAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public RSocketStrategies rSocketStrategies(
-			ObjectProvider<RSocketStrategiesCustomizer> customizers) {
+	public RSocketStrategies rSocketStrategies(ObjectProvider<RSocketStrategiesCustomizer> customizers) {
 		RSocketStrategies.Builder builder = RSocketStrategies.builder();
-		builder.reactiveAdapterStrategy(ReactiveAdapterRegistry.getSharedInstance());
-		customizers.orderedStream()
-				.forEach((customizer) -> customizer.customize(builder));
-		builder.decoder(StringDecoder.textPlainOnly());
-		builder.encoder(CharSequenceEncoder.textPlainOnly());
-		builder.dataBufferFactory(
-				new NettyDataBufferFactory(PooledByteBufAllocator.DEFAULT));
+		customizers.orderedStream().forEach((customizer) -> customizer.customize(builder));
 		return builder.build();
 	}
 
@@ -80,10 +68,9 @@ public class RSocketStrategiesAutoConfiguration {
 		@Bean
 		@Order(0)
 		@ConditionalOnBean(Jackson2ObjectMapperBuilder.class)
-		public RSocketStrategiesCustomizer jacksonCborStrategyCustomizer(
-				Jackson2ObjectMapperBuilder builder) {
+		public RSocketStrategiesCustomizer jacksonCborRSocketStrategyCustomizer(Jackson2ObjectMapperBuilder builder) {
 			return (strategy) -> {
-				ObjectMapper objectMapper = builder.factory(new CBORFactory()).build();
+				ObjectMapper objectMapper = builder.createXmlMapper(false).factory(new CBORFactory()).build();
 				strategy.decoder(new Jackson2CborDecoder(objectMapper, SUPPORTED_TYPES));
 				strategy.encoder(new Jackson2CborEncoder(objectMapper, SUPPORTED_TYPES));
 			};
@@ -101,8 +88,7 @@ public class RSocketStrategiesAutoConfiguration {
 		@Bean
 		@Order(1)
 		@ConditionalOnBean(ObjectMapper.class)
-		public RSocketStrategiesCustomizer jacksonJsonStrategyCustomizer(
-				ObjectMapper objectMapper) {
+		public RSocketStrategiesCustomizer jacksonJsonRSocketStrategyCustomizer(ObjectMapper objectMapper) {
 			return (strategy) -> {
 				strategy.decoder(new Jackson2JsonDecoder(objectMapper, SUPPORTED_TYPES));
 				strategy.encoder(new Jackson2JsonEncoder(objectMapper, SUPPORTED_TYPES));

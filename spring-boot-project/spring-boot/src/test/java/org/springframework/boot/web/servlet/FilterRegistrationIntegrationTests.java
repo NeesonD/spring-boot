@@ -18,8 +18,8 @@ package org.springframework.boot.web.servlet;
 
 import javax.servlet.Filter;
 
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext;
@@ -34,39 +34,39 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * @author Andy Wilkinson
  */
-public class FilterRegistrationIntegrationTests {
+class FilterRegistrationIntegrationTests {
 
 	private AnnotationConfigServletWebServerApplicationContext context;
 
-	@After
-	public void cleanUp() {
+	@AfterEach
+	void cleanUp() {
 		if (this.context != null) {
 			this.context.close();
 		}
 	}
 
 	@Test
-	public void normalFiltersAreRegistered() {
+	void normalFiltersAreRegistered() {
 		load(FilterConfiguration.class);
 		assertThat(this.context.getServletContext().getFilterRegistrations()).hasSize(1);
 	}
 
 	@Test
-	public void scopedTargetFiltersAreNotRegistered() {
+	void scopedTargetFiltersAreNotRegistered() {
 		load(ScopedTargetFilterConfiguration.class);
 		assertThat(this.context.getServletContext().getFilterRegistrations()).isEmpty();
 	}
 
 	private void load(Class<?> configuration) {
-		this.context = new AnnotationConfigServletWebServerApplicationContext(
-				ContainerConfiguration.class, configuration);
+		this.context = new AnnotationConfigServletWebServerApplicationContext(ContainerConfiguration.class,
+				configuration);
 	}
 
 	@Configuration(proxyBeanMethods = false)
 	static class ContainerConfiguration {
 
 		@Bean
-		public TomcatServletWebServerFactory webServerFactory() {
+		TomcatServletWebServerFactory webServerFactory() {
 			return new TomcatServletWebServerFactory(0);
 		}
 
@@ -76,7 +76,7 @@ public class FilterRegistrationIntegrationTests {
 	static class ScopedTargetFilterConfiguration {
 
 		@Bean(name = "scopedTarget.myFilter")
-		public Filter myFilter() {
+		Filter myFilter() {
 			return new MockFilter();
 		}
 
@@ -86,7 +86,7 @@ public class FilterRegistrationIntegrationTests {
 	static class FilterConfiguration {
 
 		@Bean
-		public Filter myFilter() {
+		Filter myFilter() {
 			return new MockFilter();
 		}
 

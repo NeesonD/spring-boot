@@ -30,15 +30,13 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
  * @author Andy Wilkinson
  */
 @DirtiesContext
-@SpringBootTest(webEnvironment = WebEnvironment.DEFINED_PORT,
-		properties = { "server.port=0", "value=123" })
-public class SpringBootTestWebEnvironmentDefinedPortTests
-		extends AbstractSpringBootTestWebServerWebEnvironmentTests {
+@SpringBootTest(webEnvironment = WebEnvironment.DEFINED_PORT, properties = { "server.port=0", "value=123" })
+public class SpringBootTestWebEnvironmentDefinedPortTests extends AbstractSpringBootTestWebServerWebEnvironmentTests {
 
 	@Configuration(proxyBeanMethods = false)
 	@EnableWebMvc
 	@RestController
-	protected static class Config extends AbstractConfig {
+	static class Config extends AbstractConfig {
 
 	}
 

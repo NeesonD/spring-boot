@@ -37,60 +37,52 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Phillip Webb
  * @author Andy Wilkinson
  */
-public class CompositeMeterRegistryAutoConfigurationTests {
+class CompositeMeterRegistryAutoConfigurationTests {
 
 	private static final String COMPOSITE_NAME = "compositeMeterRegistry";
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-			.withUserConfiguration(BaseConfig.class).withConfiguration(
-					AutoConfigurations.of(CompositeMeterRegistryAutoConfiguration.class));
+			.withUserConfiguration(BaseConfig.class)
+			.withConfiguration(AutoConfigurations.of(CompositeMeterRegistryAutoConfiguration.class));
 
 	@Test
-	public void registerWhenHasNoMeterRegistryShouldRegisterEmptyNoOpComposite() {
-		this.contextRunner.withUserConfiguration(NoMeterRegistryConfig.class)
-				.run((context) -> {
-					assertThat(context).hasSingleBean(MeterRegistry.class);
-					CompositeMeterRegistry registry = context.getBean("noOpMeterRegistry",
-							CompositeMeterRegistry.class);
-					assertThat(registry.getRegistries()).isEmpty();
-				});
+	void registerWhenHasNoMeterRegistryShouldRegisterEmptyNoOpComposite() {
+		this.contextRunner.withUserConfiguration(NoMeterRegistryConfig.class).run((context) -> {
+			assertThat(context).hasSingleBean(MeterRegistry.class);
+			CompositeMeterRegistry registry = context.getBean("noOpMeterRegistry", CompositeMeterRegistry.class);
+			assertThat(registry.getRegistries()).isEmpty();
+		});
 	}
 
 	@Test
-	public void registerWhenHasSingleMeterRegistryShouldDoNothing() {
-		this.contextRunner.withUserConfiguration(SingleMeterRegistryConfig.class)
-				.run((context) -> {
-					assertThat(context).hasSingleBean(MeterRegistry.class);
-					MeterRegistry registry = context.getBean(MeterRegistry.class);
-					assertThat(registry).isInstanceOf(TestMeterRegistry.class);
-				});
+	void registerWhenHasSingleMeterRegistryShouldDoNothing() {
+		this.contextRunner.withUserConfiguration(SingleMeterRegistryConfig.class).run((context) -> {
+			assertThat(context).hasSingleBean(MeterRegistry.class);
+			MeterRegistry registry = context.getBean(MeterRegistry.class);
+			assertThat(registry).isInstanceOf(TestMeterRegistry.class);
+		});
 	}
 
 	@Test
-	public void registerWhenHasMultipleMeterRegistriesShouldAddPrimaryComposite() {
-		this.contextRunner.withUserConfiguration(MultipleMeterRegistriesConfig.class)
-				.run((context) -> {
-					assertThat(context.getBeansOfType(MeterRegistry.class)).hasSize(3)
-							.containsKeys("meterRegistryOne", "meterRegistryTwo",
-									COMPOSITE_NAME);
-					MeterRegistry primary = context.getBean(MeterRegistry.class);
-					assertThat(primary).isInstanceOf(CompositeMeterRegistry.class);
-					assertThat(((CompositeMeterRegistry) primary).getRegistries())
-							.hasSize(2);
-					assertThat(primary.config().clock()).isNotNull();
-				});
+	void registerWhenHasMultipleMeterRegistriesShouldAddPrimaryComposite() {
+		this.contextRunner.withUserConfiguration(MultipleMeterRegistriesConfig.class).run((context) -> {
+			assertThat(context.getBeansOfType(MeterRegistry.class)).hasSize(3).containsKeys("meterRegistryOne",
+					"meterRegistryTwo", COMPOSITE_NAME);
+			MeterRegistry primary = context.getBean(MeterRegistry.class);
+			assertThat(primary).isInstanceOf(CompositeMeterRegistry.class);
+			assertThat(((CompositeMeterRegistry) primary).getRegistries()).hasSize(2);
+			assertThat(primary.config().clock()).isNotNull();
+		});
 	}
 
 	@Test
-	public void registerWhenHasMultipleRegistriesAndOneIsPrimaryShouldDoNothing() {
-		this.contextRunner
-				.withUserConfiguration(MultipleMeterRegistriesWithOnePrimaryConfig.class)
-				.run((context) -> {
-					assertThat(context.getBeansOfType(MeterRegistry.class)).hasSize(2)
-							.containsKeys("meterRegistryOne", "meterRegistryTwo");
-					MeterRegistry primary = context.getBean(MeterRegistry.class);
-					assertThat(primary).isInstanceOf(TestMeterRegistry.class);
-				});
+	void registerWhenHasMultipleRegistriesAndOneIsPrimaryShouldDoNothing() {
+		this.contextRunner.withUserConfiguration(MultipleMeterRegistriesWithOnePrimaryConfig.class).run((context) -> {
+			assertThat(context.getBeansOfType(MeterRegistry.class)).hasSize(2).containsKeys("meterRegistryOne",
+					"meterRegistryTwo");
+			MeterRegistry primary = context.getBean(MeterRegistry.class);
+			assertThat(primary).isInstanceOf(TestMeterRegistry.class);
+		});
 	}
 
 	@Configuration(proxyBeanMethods = false)
@@ -98,7 +90,7 @@ public class CompositeMeterRegistryAutoConfigurationTests {
 
 		@Bean
 		@ConditionalOnMissingBean
-		public Clock micrometerClock() {
+		Clock micrometerClock() {
 			return Clock.SYSTEM;
 		}
 
@@ -113,7 +105,7 @@ public class CompositeMeterRegistryAutoConfigurationTests {
 	static class SingleMeterRegistryConfig {
 
 		@Bean
-		public MeterRegistry meterRegistry() {
+		MeterRegistry meterRegistry() {
 			return new TestMeterRegistry();
 		}
 
@@ -123,12 +115,12 @@ public class CompositeMeterRegistryAutoConfigurationTests {
 	static class MultipleMeterRegistriesConfig {
 
 		@Bean
-		public MeterRegistry meterRegistryOne() {
+		MeterRegistry meterRegistryOne() {
 			return new TestMeterRegistry();
 		}
 
 		@Bean
-		public MeterRegistry meterRegistryTwo() {
+		MeterRegistry meterRegistryTwo() {
 			return new SimpleMeterRegistry();
 		}
 
@@ -139,12 +131,12 @@ public class CompositeMeterRegistryAutoConfigurationTests {
 
 		@Bean
 		@Primary
-		public MeterRegistry meterRegistryOne() {
+		MeterRegistry meterRegistryOne() {
 			return new TestMeterRegistry();
 		}
 
 		@Bean
-		public MeterRegistry meterRegistryTwo() {
+		MeterRegistry meterRegistryTwo() {
 			return new SimpleMeterRegistry();
 		}
 

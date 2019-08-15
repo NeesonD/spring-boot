@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,7 +89,7 @@ public final class Health {
 		if (obj == this) {
 			return true;
 		}
-		if (obj != null && obj instanceof Health) {
+		if (obj instanceof Health) {
 			Health other = (Health) obj;
 			return this.status.equals(other.status) && this.details.equals(other.details);
 		}

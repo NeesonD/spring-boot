@@ -34,7 +34,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DirtiesContext
 @SpringBootTest
 @ContextConfiguration(classes = Config.class, locations = "classpath:test.groovy")
-public class SpringBootTestMixedConfigurationTests {
+class SpringBootTestMixedConfigurationTests {
 
 	@Autowired
 	private String foo;
@@ -43,13 +43,13 @@ public class SpringBootTestMixedConfigurationTests {
 	private Config config;
 
 	@Test
-	public void mixedConfigClasses() {
+	void mixedConfigClasses() {
 		assertThat(this.foo).isNotNull();
 		assertThat(this.config).isNotNull();
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	protected static class Config {
+	static class Config {
 
 	}
 

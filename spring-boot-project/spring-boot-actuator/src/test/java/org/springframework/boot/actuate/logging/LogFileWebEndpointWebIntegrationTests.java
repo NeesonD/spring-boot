@@ -19,19 +19,17 @@ package org.springframework.boot.actuate.logging;
 import java.io.File;
 import java.io.IOException;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.io.TempDir;
 
-import org.springframework.boot.actuate.endpoint.web.test.WebEndpointRunners;
-import org.springframework.boot.test.util.TestPropertyValues;
+import org.springframework.boot.actuate.endpoint.web.test.WebEndpointTest;
+import org.springframework.boot.logging.LogFile;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
+import org.springframework.mock.env.MockEnvironment;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.util.FileCopyUtils;
 
@@ -41,54 +39,48 @@ import org.springframework.util.FileCopyUtils;
  *
  * @author Andy Wilkinson
  */
-@RunWith(WebEndpointRunners.class)
-public class LogFileWebEndpointWebIntegrationTests {
+class LogFileWebEndpointWebIntegrationTests {
 
-	private static ConfigurableApplicationContext context;
+	private ConfigurableApplicationContext context;
 
-	private static WebTestClient client;
+	private WebTestClient client;
 
-	@Rule
-	public final TemporaryFolder temp = new TemporaryFolder();
+	private static File tempFile;
 
-	private File logFile;
+	@BeforeEach
+	void setUp(WebTestClient client, ConfigurableApplicationContext context) {
+		this.client = client;
+		this.context = context;
 
-	@Before
-	public void setUp() throws IOException {
-		this.logFile = this.temp.newFile();
-		FileCopyUtils.copy("--TEST--".getBytes(), this.logFile);
 	}
 
-	@Test
-	public void getRequestProduces404ResponseWhenLogFileNotFound() {
-		client.get().uri("/actuator/logfile").exchange().expectStatus().isNotFound();
+	@BeforeAll
+	static void setup(@TempDir File temp) throws IOException {
+		tempFile = temp;
 	}
 
-	@Test
-	public void getRequestProducesResponseWithLogFile() {
-		TestPropertyValues.of("logging.file.name:" + this.logFile.getAbsolutePath())
-				.applyTo(context);
-		client.get().uri("/actuator/logfile").exchange().expectStatus().isOk()
-				.expectHeader().contentType("text/plain; charset=UTF-8")
-				.expectBody(String.class).isEqualTo("--TEST--");
+	@WebEndpointTest
+	void getRequestProducesResponseWithLogFile() {
+		this.client.get().uri("/actuator/logfile").exchange().expectStatus().isOk().expectHeader()
+				.contentType("text/plain; charset=UTF-8").expectBody(String.class).isEqualTo("--TEST--");
 	}
 
-	@Test
-	public void getRequestThatAcceptsTextPlainProducesResponseWithLogFile() {
-		TestPropertyValues.of("logging.file:" + this.logFile.getAbsolutePath())
-				.applyTo(context);
-		client.get().uri("/actuator/logfile").accept(MediaType.TEXT_PLAIN).exchange()
-				.expectStatus().isOk().expectHeader()
-				.contentType("text/plain; charset=UTF-8").expectBody(String.class)
-				.isEqualTo("--TEST--");
+	@WebEndpointTest
+	void getRequestThatAcceptsTextPlainProducesResponseWithLogFile() {
+		this.client.get().uri("/actuator/logfile").accept(MediaType.TEXT_PLAIN).exchange().expectStatus().isOk()
+				.expectHeader().contentType("text/plain; charset=UTF-8").expectBody(String.class).isEqualTo("--TEST--");
 	}
 
 	@Configuration(proxyBeanMethods = false)
 	static class TestConfiguration {
 
 		@Bean
-		public LogFileWebEndpoint logFileEndpoint(Environment environment) {
-			return new LogFileWebEndpoint(environment);
+		LogFileWebEndpoint logFileEndpoint() throws IOException {
+			File logFile = new File(tempFile, "test.log");
+			FileCopyUtils.copy("--TEST--".getBytes(), logFile);
+			MockEnvironment environment = new MockEnvironment();
+			environment.setProperty("logging.file", logFile.getAbsolutePath());
+			return new LogFileWebEndpoint(LogFile.get(environment), null);
 		}
 
 	}

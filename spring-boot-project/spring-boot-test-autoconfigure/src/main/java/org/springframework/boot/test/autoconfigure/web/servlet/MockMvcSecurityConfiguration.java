@@ -41,7 +41,7 @@ class MockMvcSecurityConfiguration {
 
 	@Bean
 	@ConditionalOnBean(name = DEFAULT_SECURITY_FILTER_NAME)
-	public SecurityMockMvcBuilderCustomizer securityMockMvcBuilderCustomizer() {
+	SecurityMockMvcBuilderCustomizer securityMockMvcBuilderCustomizer() {
 		return new SecurityMockMvcBuilderCustomizer();
 	}
 
@@ -58,8 +58,7 @@ class MockMvcSecurityConfiguration {
 			builder.apply(new MockMvcConfigurerAdapter() {
 
 				@Override
-				public RequestPostProcessor beforeMockMvcCreated(
-						ConfigurableMockMvcBuilder<?> builder,
+				public RequestPostProcessor beforeMockMvcCreated(ConfigurableMockMvcBuilder<?> builder,
 						WebApplicationContext context) {
 					return SecurityMockMvcRequestPostProcessors.testSecurityContext();
 				}

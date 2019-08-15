@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,15 +30,14 @@ class TestPropertyMapper implements PropertyMapper {
 
 	private MultiValueMap<ConfigurationPropertyName, PropertyMapping> fromConfig = new LinkedMultiValueMap<>();
 
-	public void addFromPropertySource(String from, String... to) {
+	void addFromPropertySource(String from, String... to) {
 		for (String configurationPropertyName : to) {
-			this.fromSource.add(from, new PropertyMapping(from,
-					ConfigurationPropertyName.of(configurationPropertyName)));
+			this.fromSource.add(from,
+					new PropertyMapping(from, ConfigurationPropertyName.of(configurationPropertyName)));
 		}
 	}
 
-	public void addFromConfigurationProperty(ConfigurationPropertyName from,
-			String... to) {
+	void addFromConfigurationProperty(ConfigurationPropertyName from, String... to) {
 		for (String propertySourceName : to) {
 			this.fromConfig.add(from, new PropertyMapping(propertySourceName, from));
 		}
@@ -52,8 +51,7 @@ class TestPropertyMapper implements PropertyMapper {
 
 	@Override
 	public PropertyMapping[] map(ConfigurationPropertyName configurationPropertyName) {
-		return this.fromConfig
-				.getOrDefault(configurationPropertyName, Collections.emptyList())
+		return this.fromConfig.getOrDefault(configurationPropertyName, Collections.emptyList())
 				.toArray(new PropertyMapping[0]);
 	}
 

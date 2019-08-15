@@ -59,14 +59,13 @@ class DefinitionsParser {
 		}
 	}
 
-	public void parse(Class<?> source) {
+	void parse(Class<?> source) {
 		parseElement(source);
 		ReflectionUtils.doWithFields(source, this::parseElement);
 	}
 
 	private void parseElement(AnnotatedElement element) {
-		MergedAnnotations annotations = MergedAnnotations.from(element,
-				SearchStrategy.SUPERCLASS);
+		MergedAnnotations annotations = MergedAnnotations.from(element, SearchStrategy.SUPERCLASS);
 		annotations.stream(MockBean.class).map(MergedAnnotation::synthesize)
 				.forEach((annotation) -> parseMockBeanAnnotation(annotation, element));
 		annotations.stream(SpyBean.class).map(MergedAnnotation::synthesize)
@@ -75,16 +74,13 @@ class DefinitionsParser {
 
 	private void parseMockBeanAnnotation(MockBean annotation, AnnotatedElement element) {
 		Set<ResolvableType> typesToMock = getOrDeduceTypes(element, annotation.value());
-		Assert.state(!typesToMock.isEmpty(),
-				() -> "Unable to deduce type to mock from " + element);
+		Assert.state(!typesToMock.isEmpty(), () -> "Unable to deduce type to mock from " + element);
 		if (StringUtils.hasLength(annotation.name())) {
-			Assert.state(typesToMock.size() == 1,
-					"The name attribute can only be used when mocking a single class");
+			Assert.state(typesToMock.size() == 1, "The name attribute can only be used when mocking a single class");
 		}
 		for (ResolvableType typeToMock : typesToMock) {
-			MockDefinition definition = new MockDefinition(annotation.name(), typeToMock,
-					annotation.extraInterfaces(), annotation.answer(),
-					annotation.serializable(), annotation.reset(),
+			MockDefinition definition = new MockDefinition(annotation.name(), typeToMock, annotation.extraInterfaces(),
+					annotation.answer(), annotation.serializable(), annotation.reset(),
 					QualifierDefinition.forElement(element));
 			addDefinition(element, definition, "mock");
 		}
@@ -92,33 +88,27 @@ class DefinitionsParser {
 
 	private void parseSpyBeanAnnotation(SpyBean annotation, AnnotatedElement element) {
 		Set<ResolvableType> typesToSpy = getOrDeduceTypes(element, annotation.value());
-		Assert.state(!typesToSpy.isEmpty(),
-				() -> "Unable to deduce type to spy from " + element);
+		Assert.state(!typesToSpy.isEmpty(), () -> "Unable to deduce type to spy from " + element);
 		if (StringUtils.hasLength(annotation.name())) {
-			Assert.state(typesToSpy.size() == 1,
-					"The name attribute can only be used when spying a single class");
+			Assert.state(typesToSpy.size() == 1, "The name attribute can only be used when spying a single class");
 		}
 		for (ResolvableType typeToSpy : typesToSpy) {
-			SpyDefinition definition = new SpyDefinition(annotation.name(), typeToSpy,
-					annotation.reset(), annotation.proxyTargetAware(),
-					QualifierDefinition.forElement(element));
+			SpyDefinition definition = new SpyDefinition(annotation.name(), typeToSpy, annotation.reset(),
+					annotation.proxyTargetAware(), QualifierDefinition.forElement(element));
 			addDefinition(element, definition, "spy");
 		}
 	}
 
-	private void addDefinition(AnnotatedElement element, Definition definition,
-			String type) {
+	private void addDefinition(AnnotatedElement element, Definition definition, String type) {
 		boolean isNewDefinition = this.definitions.add(definition);
-		Assert.state(isNewDefinition,
-				() -> "Duplicate " + type + " definition " + definition);
+		Assert.state(isNewDefinition, () -> "Duplicate " + type + " definition " + definition);
 		if (element instanceof Field) {
 			Field field = (Field) element;
 			this.definitionFields.put(definition, field);
 		}
 	}
 
-	private Set<ResolvableType> getOrDeduceTypes(AnnotatedElement element,
-			Class<?>[] value) {
+	private Set<ResolvableType> getOrDeduceTypes(AnnotatedElement element, Class<?>[] value) {
 		Set<ResolvableType> types = new LinkedHashSet<>();
 		for (Class<?> clazz : value) {
 			types.add(ResolvableType.forClass(clazz));
@@ -129,11 +119,11 @@ class DefinitionsParser {
 		return types;
 	}
 
-	public Set<Definition> getDefinitions() {
+	Set<Definition> getDefinitions() {
 		return Collections.unmodifiableSet(this.definitions);
 	}
 
-	public Field getField(Definition definition) {
+	Field getField(Definition definition) {
 		return this.definitionFields.get(definition);
 	}
 

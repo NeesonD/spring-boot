@@ -33,48 +33,41 @@ import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
  * @author Phillip Webb
  */
 @SuppressWarnings("resource")
-public class SpringBootConditionTests {
+class SpringBootConditionTests {
 
 	@Test
-	public void sensibleClassException() {
-		assertThatIllegalStateException()
-				.isThrownBy(
-						() -> new AnnotationConfigApplicationContext(ErrorOnClass.class))
-				.withMessageContaining(
-						"Error processing condition on " + ErrorOnClass.class.getName());
+	void sensibleClassException() {
+		assertThatIllegalStateException().isThrownBy(() -> new AnnotationConfigApplicationContext(ErrorOnClass.class))
+				.withMessageContaining("Error processing condition on " + ErrorOnClass.class.getName());
 	}
 
 	@Test
-	public void sensibleMethodException() {
-		assertThatIllegalStateException()
-				.isThrownBy(
-						() -> new AnnotationConfigApplicationContext(ErrorOnMethod.class))
-				.withMessageContaining("Error processing condition on "
-						+ ErrorOnMethod.class.getName() + ".myBean");
+	void sensibleMethodException() {
+		assertThatIllegalStateException().isThrownBy(() -> new AnnotationConfigApplicationContext(ErrorOnMethod.class))
+				.withMessageContaining("Error processing condition on " + ErrorOnMethod.class.getName() + ".myBean");
 	}
 
 	@Configuration(proxyBeanMethods = false)
 	@Conditional(AlwaysThrowsCondition.class)
-	public static class ErrorOnClass {
+	static class ErrorOnClass {
 
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	public static class ErrorOnMethod {
+	static class ErrorOnMethod {
 
 		@Bean
 		@Conditional(AlwaysThrowsCondition.class)
-		public String myBean() {
+		String myBean() {
 			return "bean";
 		}
 
 	}
 
-	public static class AlwaysThrowsCondition extends SpringBootCondition {
+	static class AlwaysThrowsCondition extends SpringBootCondition {
 
 		@Override
-		public ConditionOutcome getMatchOutcome(ConditionContext context,
-				AnnotatedTypeMetadata metadata) {
+		public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
 			throw new RuntimeException("Oh no!");
 		}
 

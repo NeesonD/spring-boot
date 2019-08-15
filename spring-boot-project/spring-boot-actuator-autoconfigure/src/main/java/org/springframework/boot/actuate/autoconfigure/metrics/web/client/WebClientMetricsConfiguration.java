@@ -41,17 +41,16 @@ class WebClientMetricsConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public WebClientExchangeTagsProvider defaultWebClientExchangeTagsProvider() {
+	WebClientExchangeTagsProvider defaultWebClientExchangeTagsProvider() {
 		return new DefaultWebClientExchangeTagsProvider();
 	}
 
 	@Bean
-	public MetricsWebClientCustomizer metricsWebClientCustomizer(
-			MeterRegistry meterRegistry, WebClientExchangeTagsProvider tagsProvider,
-			MetricsProperties properties) {
+	MetricsWebClientCustomizer metricsWebClientCustomizer(MeterRegistry meterRegistry,
+			WebClientExchangeTagsProvider tagsProvider, MetricsProperties properties) {
 		ClientRequest request = properties.getWeb().getClient().getRequest();
-		return new MetricsWebClientCustomizer(meterRegistry, tagsProvider,
-				request.getMetricName(), request.getAutotime());
+		return new MetricsWebClientCustomizer(meterRegistry, tagsProvider, request.getMetricName(),
+				request.getAutotime());
 	}
 
 }

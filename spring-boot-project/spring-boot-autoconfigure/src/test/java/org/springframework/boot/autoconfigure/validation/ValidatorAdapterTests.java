@@ -44,62 +44,53 @@ import static org.mockito.Mockito.verify;
  * @author Stephane Nicoll
  * @author Madhura Bhave
  */
-public class ValidatorAdapterTests {
+class ValidatorAdapterTests {
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner();
 
 	@Test
-	public void wrapLocalValidatorFactoryBean() {
-		this.contextRunner.withUserConfiguration(LocalValidatorFactoryBeanConfig.class)
-				.run((context) -> {
-					ValidatorAdapter wrapper = context.getBean(ValidatorAdapter.class);
-					assertThat(wrapper.supports(SampleData.class)).isTrue();
-					MapBindingResult errors = new MapBindingResult(
-							new HashMap<String, Object>(), "test");
-					wrapper.validate(new SampleData(40), errors);
-					assertThat(errors.getErrorCount()).isEqualTo(1);
-				});
+	void wrapLocalValidatorFactoryBean() {
+		this.contextRunner.withUserConfiguration(LocalValidatorFactoryBeanConfig.class).run((context) -> {
+			ValidatorAdapter wrapper = context.getBean(ValidatorAdapter.class);
+			assertThat(wrapper.supports(SampleData.class)).isTrue();
+			MapBindingResult errors = new MapBindingResult(new HashMap<String, Object>(), "test");
+			wrapper.validate(new SampleData(40), errors);
+			assertThat(errors.getErrorCount()).isEqualTo(1);
+		});
 	}
 
 	@Test
-	public void wrapperInvokesCallbackOnNonManagedBean() {
-		this.contextRunner.withUserConfiguration(NonManagedBeanConfig.class)
-				.run((context) -> {
-					LocalValidatorFactoryBean validator = context
-							.getBean(NonManagedBeanConfig.class).validator;
-					verify(validator, times(1))
-							.setApplicationContext(any(ApplicationContext.class));
-					verify(validator, times(1)).afterPropertiesSet();
-					verify(validator, never()).destroy();
-					context.close();
-					verify(validator, times(1)).destroy();
-				});
+	void wrapperInvokesCallbackOnNonManagedBean() {
+		this.contextRunner.withUserConfiguration(NonManagedBeanConfig.class).run((context) -> {
+			LocalValidatorFactoryBean validator = context.getBean(NonManagedBeanConfig.class).validator;
+			verify(validator, times(1)).setApplicationContext(any(ApplicationContext.class));
+			verify(validator, times(1)).afterPropertiesSet();
+			verify(validator, never()).destroy();
+			context.close();
+			verify(validator, times(1)).destroy();
+		});
 	}
 
 	@Test
-	public void wrapperDoesNotInvokeCallbackOnManagedBean() {
-		this.contextRunner.withUserConfiguration(ManagedBeanConfig.class)
-				.run((context) -> {
-					LocalValidatorFactoryBean validator = context
-							.getBean(ManagedBeanConfig.class).validator;
-					verify(validator, never())
-							.setApplicationContext(any(ApplicationContext.class));
-					verify(validator, never()).afterPropertiesSet();
-					verify(validator, never()).destroy();
-					context.close();
-					verify(validator, never()).destroy();
-				});
+	void wrapperDoesNotInvokeCallbackOnManagedBean() {
+		this.contextRunner.withUserConfiguration(ManagedBeanConfig.class).run((context) -> {
+			LocalValidatorFactoryBean validator = context.getBean(ManagedBeanConfig.class).validator;
+			verify(validator, never()).setApplicationContext(any(ApplicationContext.class));
+			verify(validator, never()).afterPropertiesSet();
+			verify(validator, never()).destroy();
+			context.close();
+			verify(validator, never()).destroy();
+		});
 	}
 
 	@Test
-	public void wrapperWhenValidationProviderNotPresentShouldNotThrowException() {
+	void wrapperWhenValidationProviderNotPresentShouldNotThrowException() {
 		ClassPathResource hibernateValidator = new ClassPathResource(
 				"META-INF/services/javax.validation.spi.ValidationProvider");
 		this.contextRunner
-				.withClassLoader(new FilteredClassLoader(
-						FilteredClassLoader.ClassPathResourceFilter
-								.of(hibernateValidator),
-						FilteredClassLoader.PackageFilter.of("org.hibernate.validator")))
+				.withClassLoader(
+						new FilteredClassLoader(FilteredClassLoader.ClassPathResourceFilter.of(hibernateValidator),
+								FilteredClassLoader.PackageFilter.of("org.hibernate.validator")))
 				.run((context) -> ValidatorAdapter.get(context, null));
 	}
 
@@ -107,12 +98,12 @@ public class ValidatorAdapterTests {
 	static class LocalValidatorFactoryBeanConfig {
 
 		@Bean
-		public LocalValidatorFactoryBean validator() {
+		LocalValidatorFactoryBean validator() {
 			return new LocalValidatorFactoryBean();
 		}
 
 		@Bean
-		public ValidatorAdapter wrapper(LocalValidatorFactoryBean validator) {
+		ValidatorAdapter wrapper(LocalValidatorFactoryBean validator) {
 			return new ValidatorAdapter(validator, true);
 		}
 
@@ -121,11 +112,10 @@ public class ValidatorAdapterTests {
 	@Configuration(proxyBeanMethods = false)
 	static class NonManagedBeanConfig {
 
-		private final LocalValidatorFactoryBean validator = mock(
-				LocalValidatorFactoryBean.class);
+		private final LocalValidatorFactoryBean validator = mock(LocalValidatorFactoryBean.class);
 
 		@Bean
-		public ValidatorAdapter wrapper() {
+		ValidatorAdapter wrapper() {
 			return new ValidatorAdapter(this.validator, false);
 		}
 
@@ -134,11 +124,10 @@ public class ValidatorAdapterTests {
 	@Configuration(proxyBeanMethods = false)
 	static class ManagedBeanConfig {
 
-		private final LocalValidatorFactoryBean validator = mock(
-				LocalValidatorFactoryBean.class);
+		private final LocalValidatorFactoryBean validator = mock(LocalValidatorFactoryBean.class);
 
 		@Bean
-		public ValidatorAdapter wrapper() {
+		ValidatorAdapter wrapper() {
 			return new ValidatorAdapter(this.validator, true);
 		}
 

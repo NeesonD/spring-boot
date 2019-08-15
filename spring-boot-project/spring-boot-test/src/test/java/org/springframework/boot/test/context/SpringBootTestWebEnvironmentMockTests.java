@@ -44,7 +44,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @SpringBootTest("value=123")
 @DirtiesContext
-public class SpringBootTestWebEnvironmentMockTests {
+class SpringBootTestWebEnvironmentMockTests {
 
 	@Value("${value}")
 	private int value = 0;
@@ -56,35 +56,34 @@ public class SpringBootTestWebEnvironmentMockTests {
 	private ServletContext servletContext;
 
 	@Test
-	public void annotationAttributesOverridePropertiesFile() {
+	void annotationAttributesOverridePropertiesFile() {
 		assertThat(this.value).isEqualTo(123);
 	}
 
 	@Test
-	public void validateWebApplicationContextIsSet() {
+	void validateWebApplicationContextIsSet() {
 		WebApplicationContext fromServletContext = WebApplicationContextUtils
 				.getWebApplicationContext(this.servletContext);
 		assertThat(fromServletContext).isSameAs(this.context);
 	}
 
 	@Test
-	public void setsRequestContextHolder() {
+	void setsRequestContextHolder() {
 		RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
 		assertThat(attributes).isNotNull();
 	}
 
 	@Test
-	public void resourcePath() {
-		assertThat(this.servletContext).hasFieldOrPropertyWithValue("resourceBasePath",
-				"src/main/webapp");
+	void resourcePath() {
+		assertThat(this.servletContext).hasFieldOrPropertyWithValue("resourceBasePath", "src/main/webapp");
 	}
 
 	@Configuration(proxyBeanMethods = false)
 	@EnableWebMvc
-	protected static class Config {
+	static class Config {
 
 		@Bean
-		public static PropertySourcesPlaceholderConfigurer propertyPlaceholder() {
+		static PropertySourcesPlaceholderConfigurer propertyPlaceholder() {
 			return new PropertySourcesPlaceholderConfigurer();
 		}
 

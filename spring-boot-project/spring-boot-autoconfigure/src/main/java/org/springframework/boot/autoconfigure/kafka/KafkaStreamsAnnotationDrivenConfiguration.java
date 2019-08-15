@@ -42,8 +42,7 @@ import org.springframework.kafka.config.StreamsBuilderFactoryBean;
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(StreamsBuilder.class)
-@ConditionalOnBean(
-		name = KafkaStreamsDefaultConfiguration.DEFAULT_STREAMS_BUILDER_BEAN_NAME)
+@ConditionalOnBean(name = KafkaStreamsDefaultConfiguration.DEFAULT_STREAMS_BUILDER_BEAN_NAME)
 class KafkaStreamsAnnotationDrivenConfiguration {
 
 	private final KafkaProperties properties;
@@ -54,13 +53,12 @@ class KafkaStreamsAnnotationDrivenConfiguration {
 
 	@ConditionalOnMissingBean
 	@Bean(KafkaStreamsDefaultConfiguration.DEFAULT_STREAMS_CONFIG_BEAN_NAME)
-	public KafkaStreamsConfiguration defaultKafkaStreamsConfig(Environment environment) {
+	KafkaStreamsConfiguration defaultKafkaStreamsConfig(Environment environment) {
 		Map<String, Object> streamsProperties = this.properties.buildStreamsProperties();
 		if (this.properties.getStreams().getApplicationId() == null) {
 			String applicationName = environment.getProperty("spring.application.name");
 			if (applicationName == null) {
-				throw new InvalidConfigurationPropertyValueException(
-						"spring.kafka.streams.application-id", null,
+				throw new InvalidConfigurationPropertyValueException("spring.kafka.streams.application-id", null,
 						"This property is mandatory and fallback 'spring.application.name' is not set either.");
 			}
 			streamsProperties.put(StreamsConfig.APPLICATION_ID_CONFIG, applicationName);
@@ -69,7 +67,7 @@ class KafkaStreamsAnnotationDrivenConfiguration {
 	}
 
 	@Bean
-	public KafkaStreamsFactoryBeanConfigurer kafkaStreamsFactoryBeanConfigurer(
+	KafkaStreamsFactoryBeanConfigurer kafkaStreamsFactoryBeanConfigurer(
 			@Qualifier(KafkaStreamsDefaultConfiguration.DEFAULT_STREAMS_BUILDER_BEAN_NAME) StreamsBuilderFactoryBean factoryBean) {
 		return new KafkaStreamsFactoryBeanConfigurer(this.properties, factoryBean);
 	}
@@ -81,8 +79,7 @@ class KafkaStreamsAnnotationDrivenConfiguration {
 
 		private final StreamsBuilderFactoryBean factoryBean;
 
-		KafkaStreamsFactoryBeanConfigurer(KafkaProperties properties,
-				StreamsBuilderFactoryBean factoryBean) {
+		KafkaStreamsFactoryBeanConfigurer(KafkaProperties properties, StreamsBuilderFactoryBean factoryBean) {
 			this.properties = properties;
 			this.factoryBean = factoryBean;
 		}

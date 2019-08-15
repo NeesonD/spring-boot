@@ -50,13 +50,13 @@ class StartupInfoLogger {
 		this.sourceClass = sourceClass;
 	}
 
-	public void logStarting(Log applicationLog) {
+	void logStarting(Log applicationLog) {
 		Assert.notNull(applicationLog, "Log must not be null");
 		applicationLog.info(LogMessage.of(this::getStartingMessage));
 		applicationLog.debug(LogMessage.of(this::getRunningMessage));
 	}
 
-	public void logStarted(Log applicationLog, StopWatch stopWatch) {
+	void logStarted(Log applicationLog, StopWatch stopWatch) {
 		if (applicationLog.isInfoEnabled()) {
 			applicationLog.info(getStartedMessage(stopWatch));
 		}
@@ -100,8 +100,7 @@ class StartupInfoLogger {
 	}
 
 	private void appendApplicationName(StringBuilder message) {
-		String name = (this.sourceClass != null)
-				? ClassUtils.getShortName(this.sourceClass) : "application";
+		String name = (this.sourceClass != null) ? ClassUtils.getShortName(this.sourceClass) : "application";
 		message.append(name);
 	}
 
@@ -127,7 +126,7 @@ class StartupInfoLogger {
 	}
 
 	private void appendPid(StringBuilder message) {
-		append(message, "with PID ", () -> new ApplicationPid());
+		append(message, "with PID ", ApplicationPid::new);
 	}
 
 	private void appendContext(StringBuilder message) {
@@ -149,8 +148,7 @@ class StartupInfoLogger {
 		append(message, prefix, call, "");
 	}
 
-	private void append(StringBuilder message, String prefix, Callable<Object> call,
-			String defaultValue) {
+	private void append(StringBuilder message, String prefix, Callable<Object> call, String defaultValue) {
 		Object result = callIfPossible(call);
 		String value = (result != null) ? result.toString() : null;
 		if (!StringUtils.hasLength(value)) {

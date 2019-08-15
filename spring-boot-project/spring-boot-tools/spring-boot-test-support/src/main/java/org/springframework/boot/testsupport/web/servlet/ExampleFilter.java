@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import javax.servlet.ServletResponse;
  * Simple example Filter used for testing.
  *
  * @author Phillip Webb
+ * @since 2.0.0
  */
 public class ExampleFilter implements Filter {
 
@@ -41,8 +42,8 @@ public class ExampleFilter implements Filter {
 	}
 
 	@Override
-	public void doFilter(ServletRequest request, ServletResponse response,
-			FilterChain chain) throws IOException, ServletException {
+	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+			throws IOException, ServletException {
 		response.getWriter().write("[");
 		chain.doFilter(request, response);
 		response.getWriter().write("]");

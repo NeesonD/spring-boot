@@ -19,6 +19,7 @@ package org.springframework.boot.actuate.autoconfigure.endpoint.web.documentatio
 import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.actuate.logging.LogFileWebEndpoint;
+import org.springframework.boot.logging.LogFile;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -36,20 +37,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @TestPropertySource(
 		properties = "logging.file.name=src/test/resources/org/springframework/boot/actuate/autoconfigure/endpoint/web/documentation/sample.log")
-public class LogFileWebEndpointDocumentationTests
-		extends MockMvcEndpointDocumentationTests {
+class LogFileWebEndpointDocumentationTests extends MockMvcEndpointDocumentationTests {
 
 	@Test
-	public void logFile() throws Exception {
+	void logFile() throws Exception {
 		this.mockMvc.perform(get("/actuator/logfile")).andExpect(status().isOk())
 				.andDo(MockMvcRestDocumentation.document("logfile/entire"));
 	}
 
 	@Test
-	public void logFileRange() throws Exception {
+	void logFileRange() throws Exception {
 		this.mockMvc.perform(get("/actuator/logfile").header("Range", "bytes=0-1023"))
-				.andExpect(status().isPartialContent())
-				.andDo(MockMvcRestDocumentation.document("logfile/range"));
+				.andExpect(status().isPartialContent()).andDo(MockMvcRestDocumentation.document("logfile/range"));
 	}
 
 	@Configuration(proxyBeanMethods = false)
@@ -57,8 +56,8 @@ public class LogFileWebEndpointDocumentationTests
 	static class TestConfiguration {
 
 		@Bean
-		public LogFileWebEndpoint endpoint(Environment environment) {
-			return new LogFileWebEndpoint(environment);
+		LogFileWebEndpoint endpoint(Environment environment) {
+			return new LogFileWebEndpoint(LogFile.get(environment), null);
 		}
 
 	}

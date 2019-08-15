@@ -45,59 +45,56 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Phillip Webb
  * @author Andy Wilkinson
  */
-public class ConfigurationPropertiesReportEndpointProxyTests {
+class ConfigurationPropertiesReportEndpointProxyTests {
 
 	@Test
-	public void testWithProxyClass() {
-		ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-				.withUserConfiguration(Config.class, SqlExecutor.class);
+	void testWithProxyClass() {
+		ApplicationContextRunner contextRunner = new ApplicationContextRunner().withUserConfiguration(Config.class,
+				SqlExecutor.class);
 		contextRunner.run((context) -> {
 			ApplicationConfigurationProperties applicationProperties = context
-					.getBean(ConfigurationPropertiesReportEndpoint.class)
-					.configurationProperties();
-			assertThat(applicationProperties.getContexts().get(context.getId()).getBeans()
-					.values().stream()
-					.map(ConfigurationPropertiesBeanDescriptor::getPrefix)
-					.filter("executor.sql"::equals).findFirst()).isNotEmpty();
+					.getBean(ConfigurationPropertiesReportEndpoint.class).configurationProperties();
+			assertThat(applicationProperties.getContexts().get(context.getId()).getBeans().values().stream()
+					.map(ConfigurationPropertiesBeanDescriptor::getPrefix).filter("executor.sql"::equals).findFirst())
+							.isNotEmpty();
 		});
 	}
 
 	@Configuration(proxyBeanMethods = false)
 	@EnableTransactionManagement(proxyTargetClass = false)
 	@EnableConfigurationProperties
-	public static class Config {
+	static class Config {
 
 		@Bean
-		public ConfigurationPropertiesReportEndpoint endpoint() {
+		ConfigurationPropertiesReportEndpoint endpoint() {
 			return new ConfigurationPropertiesReportEndpoint();
 		}
 
 		@Bean
-		public PlatformTransactionManager transactionManager(DataSource dataSource) {
+		PlatformTransactionManager transactionManager(DataSource dataSource) {
 			return new DataSourceTransactionManager(dataSource);
 		}
 
 		@Bean
-		public DataSource dataSource() {
-			return new EmbeddedDatabaseBuilder().setType(EmbeddedDatabaseType.HSQL)
-					.build();
+		DataSource dataSource() {
+			return new EmbeddedDatabaseBuilder().setType(EmbeddedDatabaseType.HSQL).build();
 		}
 
 	}
 
-	public interface Executor {
+	interface Executor {
 
 		void execute();
 
 	}
 
-	public abstract static class AbstractExecutor implements Executor {
+	abstract static class AbstractExecutor implements Executor {
 
 	}
 
 	@Component
 	@ConfigurationProperties("executor.sql")
-	public static class SqlExecutor extends AbstractExecutor {
+	static class SqlExecutor extends AbstractExecutor {
 
 		@Override
 		@Transactional(propagation = Propagation.REQUIRES_NEW)

@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.TestTemplate;
 import org.junit.jupiter.api.extension.Extension;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.TestTemplateInvocationContext;
@@ -39,8 +40,7 @@ import org.springframework.boot.gradle.testkit.GradleBuildExtension;
 public class GradleMultiDslExtension implements TestTemplateInvocationContextProvider {
 
 	@Override
-	public Stream<TestTemplateInvocationContext> provideTestTemplateInvocationContexts(
-			ExtensionContext context) {
+	public Stream<TestTemplateInvocationContext> provideTestTemplateInvocationContexts(ExtensionContext context) {
 		return Stream.of(Dsl.values()).map(DslTestTemplateInvocationContext::new);
 	}
 
@@ -49,8 +49,7 @@ public class GradleMultiDslExtension implements TestTemplateInvocationContextPro
 		return true;
 	}
 
-	private static final class DslTestTemplateInvocationContext
-			implements TestTemplateInvocationContext {
+	private static final class DslTestTemplateInvocationContext implements TestTemplateInvocationContext {
 
 		private final Dsl dsl;
 
@@ -60,8 +59,7 @@ public class GradleMultiDslExtension implements TestTemplateInvocationContextPro
 
 		@Override
 		public List<Extension> getAdditionalExtensions() {
-			return Arrays.asList(new GradleBuildFieldSetter(new GradleBuild(this.dsl)),
-					new GradleBuildExtension());
+			return Arrays.asList(new GradleBuildFieldSetter(new GradleBuild(this.dsl)), new GradleBuildExtension());
 		}
 
 		@Override

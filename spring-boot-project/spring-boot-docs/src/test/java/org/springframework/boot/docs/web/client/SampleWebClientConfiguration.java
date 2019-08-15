@@ -35,19 +35,16 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Stephane Nicoll
  */
 @SpringBootConfiguration
-@ImportAutoConfiguration({ ServletWebServerFactoryAutoConfiguration.class,
-		DispatcherServletAutoConfiguration.class, JacksonAutoConfiguration.class,
-		HttpMessageConvertersAutoConfiguration.class })
+@ImportAutoConfiguration({ ServletWebServerFactoryAutoConfiguration.class, DispatcherServletAutoConfiguration.class,
+		JacksonAutoConfiguration.class, HttpMessageConvertersAutoConfiguration.class })
 class SampleWebClientConfiguration {
 
 	@RestController
 	private static class ExampleController {
 
 		@RequestMapping("/example")
-		public ResponseEntity<String> example() {
-			return ResponseEntity.ok()
-					.location(URI.create("https://other.example.com/example"))
-					.body("test");
+		ResponseEntity<String> example() {
+			return ResponseEntity.ok().location(URI.create("https://other.example.com/example")).body("test");
 		}
 
 	}

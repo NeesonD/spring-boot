@@ -34,24 +34,22 @@ import static org.mockito.Mockito.mock;
  *
  * @author Madhura Bhave
  */
-public class ReactiveManagementContextFactoryTests {
+class ReactiveManagementContextFactoryTests {
 
 	private ReactiveManagementContextFactory factory = new ReactiveManagementContextFactory();
 
 	private AnnotationConfigReactiveWebServerApplicationContext parent = new AnnotationConfigReactiveWebServerApplicationContext();
 
 	@Test
-	public void createManagementContextShouldCreateChildContextWithConfigClasses() {
+	void createManagementContextShouldCreateChildContextWithConfigClasses() {
 		this.parent.register(ParentConfiguration.class);
 		this.parent.refresh();
 		AnnotationConfigReactiveWebServerApplicationContext childContext = (AnnotationConfigReactiveWebServerApplicationContext) this.factory
-				.createManagementContext(this.parent, TestConfiguration1.class,
-						TestConfiguration2.class);
+				.createManagementContext(this.parent, TestConfiguration1.class, TestConfiguration2.class);
 		childContext.refresh();
 		assertThat(childContext.getBean(TestConfiguration1.class)).isNotNull();
 		assertThat(childContext.getBean(TestConfiguration2.class)).isNotNull();
-		assertThat(childContext.getBean(ReactiveWebServerFactoryAutoConfiguration.class))
-				.isNotNull();
+		assertThat(childContext.getBean(ReactiveWebServerFactoryAutoConfiguration.class)).isNotNull();
 
 		childContext.close();
 		this.parent.close();
@@ -61,12 +59,12 @@ public class ReactiveManagementContextFactoryTests {
 	static class ParentConfiguration {
 
 		@Bean
-		public ReactiveWebServerFactory reactiveWebServerFactory() {
+		ReactiveWebServerFactory reactiveWebServerFactory() {
 			return mock(ReactiveWebServerFactory.class);
 		}
 
 		@Bean
-		public HttpHandler httpHandler(ApplicationContext applicationContext) {
+		HttpHandler httpHandler(ApplicationContext applicationContext) {
 			return mock(HttpHandler.class);
 		}
 
@@ -76,7 +74,7 @@ public class ReactiveManagementContextFactoryTests {
 	static class TestConfiguration1 {
 
 		@Bean
-		public HttpHandler httpHandler(ApplicationContext applicationContext) {
+		HttpHandler httpHandler(ApplicationContext applicationContext) {
 			return mock(HttpHandler.class);
 		}
 

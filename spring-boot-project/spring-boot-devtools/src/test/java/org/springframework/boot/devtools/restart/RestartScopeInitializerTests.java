@@ -18,7 +18,7 @@ package org.springframework.boot.devtools.restart;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
@@ -35,14 +35,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * @author Phillip Webb
  */
-public class RestartScopeInitializerTests {
+class RestartScopeInitializerTests {
 
 	private static AtomicInteger createCount;
 
 	private static AtomicInteger refreshCount;
 
 	@Test
-	public void restartScope() {
+	void restartScope() {
 		createCount = new AtomicInteger();
 		refreshCount = new AtomicInteger();
 		ConfigurableApplicationContext context = runApplication();
@@ -60,20 +60,19 @@ public class RestartScopeInitializerTests {
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	public static class Config {
+	static class Config {
 
 		@Bean
 		@RestartScope
-		public ScopeTestBean scopeTestBean() {
+		ScopeTestBean scopeTestBean() {
 			return new ScopeTestBean();
 		}
 
 	}
 
-	public static class ScopeTestBean
-			implements ApplicationListener<ContextRefreshedEvent> {
+	static class ScopeTestBean implements ApplicationListener<ContextRefreshedEvent> {
 
-		public ScopeTestBean() {
+		ScopeTestBean() {
 			createCount.incrementAndGet();
 		}
 

@@ -44,13 +44,11 @@ public class ExampleRepository {
 
 	@Transactional
 	public void save(ExampleEntity entity) {
-		this.jdbcTemplate.update("insert into example (id, name) values (?, ?)",
-				entity.getId(), entity.getName());
+		this.jdbcTemplate.update("insert into example (id, name) values (?, ?)", entity.getId(), entity.getName());
 	}
 
 	public ExampleEntity findById(int id) {
-		return this.jdbcTemplate.queryForObject(
-				"select id, name from example where id =?", new Object[] { id },
+		return this.jdbcTemplate.queryForObject("select id, name from example where id =?", new Object[] { id },
 				ROW_MAPPER);
 	}
 
@@ -58,7 +56,7 @@ public class ExampleRepository {
 		return this.jdbcTemplate.query("select id, name from example", ROW_MAPPER);
 	}
 
-	private static class ExampleEntityRowMapper implements RowMapper<ExampleEntity> {
+	static class ExampleEntityRowMapper implements RowMapper<ExampleEntity> {
 
 		@Override
 		public ExampleEntity mapRow(ResultSet rs, int rowNum) throws SQLException {

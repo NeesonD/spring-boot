@@ -36,27 +36,26 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
  *
  * @author Dave Syer
  * @author Josh Long
+ * @since 1.0.0
  * @see EnableAspectJAutoProxy
  */
 @Configuration(proxyBeanMethods = false)
-@ConditionalOnClass({ EnableAspectJAutoProxy.class, Aspect.class, Advice.class,
-		AnnotatedElement.class })
-@ConditionalOnProperty(prefix = "spring.aop", name = "auto", havingValue = "true",
-		matchIfMissing = true)
+@ConditionalOnClass({ EnableAspectJAutoProxy.class, Aspect.class, Advice.class, AnnotatedElement.class })
+@ConditionalOnProperty(prefix = "spring.aop", name = "auto", havingValue = "true", matchIfMissing = true)
 public class AopAutoConfiguration {
 
 	@Configuration(proxyBeanMethods = false)
 	@EnableAspectJAutoProxy(proxyTargetClass = false)
-	@ConditionalOnProperty(prefix = "spring.aop", name = "proxy-target-class",
-			havingValue = "false", matchIfMissing = false)
+	@ConditionalOnProperty(prefix = "spring.aop", name = "proxy-target-class", havingValue = "false",
+			matchIfMissing = false)
 	public static class JdkDynamicAutoProxyConfiguration {
 
 	}
 
 	@Configuration(proxyBeanMethods = false)
 	@EnableAspectJAutoProxy(proxyTargetClass = true)
-	@ConditionalOnProperty(prefix = "spring.aop", name = "proxy-target-class",
-			havingValue = "true", matchIfMissing = true)
+	@ConditionalOnProperty(prefix = "spring.aop", name = "proxy-target-class", havingValue = "true",
+			matchIfMissing = true)
 	public static class CglibAutoProxyConfiguration {
 
 	}

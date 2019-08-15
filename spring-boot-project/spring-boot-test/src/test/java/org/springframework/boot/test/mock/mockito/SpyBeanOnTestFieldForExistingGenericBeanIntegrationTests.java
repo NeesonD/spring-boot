@@ -40,7 +40,7 @@ import static org.mockito.Mockito.verify;
  * @see SpyBeanOnTestFieldForExistingBeanCacheIntegrationTests
  */
 @ExtendWith(SpringExtension.class)
-public class SpyBeanOnTestFieldForExistingGenericBeanIntegrationTests {
+class SpyBeanOnTestFieldForExistingGenericBeanIntegrationTests {
 
 	// gh-7625
 
@@ -51,18 +51,17 @@ public class SpyBeanOnTestFieldForExistingGenericBeanIntegrationTests {
 	private ExampleGenericServiceCaller caller;
 
 	@Test
-	public void testSpying() {
+	void testSpying() {
 		assertThat(this.caller.sayGreeting()).isEqualTo("I say 123 simple");
 		verify(this.exampleService).greeting();
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	@Import({ ExampleGenericServiceCaller.class,
-			SimpleExampleIntegerGenericService.class })
+	@Import({ ExampleGenericServiceCaller.class, SimpleExampleIntegerGenericService.class })
 	static class SpyBeanOnTestFieldForExistingBeanConfig {
 
 		@Bean
-		public ExampleGenericService<String> simpleExampleStringGenericService() {
+		ExampleGenericService<String> simpleExampleStringGenericService() {
 			// In order to trigger issue we need a method signature that returns the
 			// generic type not the actual implementation class
 			return new SimpleExampleStringGenericService();

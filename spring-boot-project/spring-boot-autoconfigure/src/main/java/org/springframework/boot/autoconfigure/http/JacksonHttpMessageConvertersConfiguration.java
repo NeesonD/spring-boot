@@ -33,7 +33,6 @@ import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConve
  * Configuration for HTTP message converters that use Jackson.
  *
  * @author Andy Wilkinson
- * @since 1.2.2
  */
 @Configuration(proxyBeanMethods = false)
 class JacksonHttpMessageConvertersConfiguration {
@@ -41,18 +40,16 @@ class JacksonHttpMessageConvertersConfiguration {
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass(ObjectMapper.class)
 	@ConditionalOnBean(ObjectMapper.class)
-	@ConditionalOnProperty(
-			name = HttpMessageConvertersAutoConfiguration.PREFERRED_MAPPER_PROPERTY,
+	@ConditionalOnProperty(name = HttpMessageConvertersAutoConfiguration.PREFERRED_MAPPER_PROPERTY,
 			havingValue = "jackson", matchIfMissing = true)
-	protected static class MappingJackson2HttpMessageConverterConfiguration {
+	static class MappingJackson2HttpMessageConverterConfiguration {
 
 		@Bean
 		@ConditionalOnMissingBean(value = MappingJackson2HttpMessageConverter.class,
 				ignoredType = {
 						"org.springframework.hateoas.server.mvc.TypeConstrainedMappingJackson2HttpMessageConverter",
 						"org.springframework.data.rest.webmvc.alps.AlpsJsonHttpMessageConverter" })
-		public MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter(
-				ObjectMapper objectMapper) {
+		MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter(ObjectMapper objectMapper) {
 			return new MappingJackson2HttpMessageConverter(objectMapper);
 		}
 
@@ -67,8 +64,7 @@ class JacksonHttpMessageConvertersConfiguration {
 		@ConditionalOnMissingBean
 		public MappingJackson2XmlHttpMessageConverter mappingJackson2XmlHttpMessageConverter(
 				Jackson2ObjectMapperBuilder builder) {
-			return new MappingJackson2XmlHttpMessageConverter(
-					builder.createXmlMapper(true).build());
+			return new MappingJackson2XmlHttpMessageConverter(builder.createXmlMapper(true).build());
 		}
 
 	}

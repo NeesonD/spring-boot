@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.hamcrest.Matcher;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -29,14 +30,30 @@ import static org.hamcrest.Matchers.allOf;
 
 /**
  * JUnit {@code @Rule} to capture output from System.out and System.err.
+ * <p>
+ * To use add as a {@link Rule @Rule}:
+ *
+ * <pre class="code">
+ * public class MyTest {
+ *
+ *     &#064;Rule
+ *     public OutputCaptureRule output = new OutputCaptureRule();
+ *
+ *     &#064;Test
+ *     public void test() {
+ *         assertThat(output).contains("ok");
+ *     }
+ *
+ * }
+ * </pre>
  *
  * @author Phillip Webb
  * @author Andy Wilkinson
  * @since 2.2.0
  */
-public class OutputCaptureRule implements TestRule {
+public class OutputCaptureRule implements TestRule, CapturedOutput {
 
-	private final org.springframework.boot.test.system.OutputCapture delegate = new org.springframework.boot.test.system.OutputCapture();
+	private final OutputCapture delegate = new OutputCapture();
 
 	private List<Matcher<? super String>> matchers = new ArrayList<>();
 
@@ -53,8 +70,7 @@ public class OutputCaptureRule implements TestRule {
 					try {
 						if (!OutputCaptureRule.this.matchers.isEmpty()) {
 							String output = OutputCaptureRule.this.delegate.toString();
-							Assert.assertThat(output,
-									allOf(OutputCaptureRule.this.matchers));
+							Assert.assertThat(output, allOf(OutputCaptureRule.this.matchers));
 						}
 					}
 					finally {
@@ -67,11 +83,26 @@ public class OutputCaptureRule implements TestRule {
 
 	/**
 	 * Resets the current capture session, clearing its captured output.
-	 * @deprecated since 2.2 with no replacement
+	 * @deprecated since 2.2.0 with no replacement
 	 */
 	@Deprecated
 	public void reset() {
 		OutputCaptureRule.this.delegate.reset();
+	}
+
+	@Override
+	public String getAll() {
+		return this.delegate.getAll();
+	}
+
+	@Override
+	public String getOut() {
+		return this.delegate.getOut();
+	}
+
+	@Override
+	public String getErr() {
+		return this.delegate.getErr();
 	}
 
 	@Override

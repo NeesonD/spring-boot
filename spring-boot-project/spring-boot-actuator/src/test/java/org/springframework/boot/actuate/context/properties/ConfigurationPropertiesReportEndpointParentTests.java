@@ -34,62 +34,47 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Dave Syer
  * @author Andy Wilkinson
  */
-public class ConfigurationPropertiesReportEndpointParentTests {
+class ConfigurationPropertiesReportEndpointParentTests {
 
 	@Test
-	public void configurationPropertiesClass() {
-		new ApplicationContextRunner().withUserConfiguration(Parent.class)
-				.run((parent) -> {
-					new ApplicationContextRunner()
-							.withUserConfiguration(ClassConfigurationProperties.class)
-							.withParent(parent).run((child) -> {
-								ConfigurationPropertiesReportEndpoint endpoint = child
-										.getBean(
-												ConfigurationPropertiesReportEndpoint.class);
-								ApplicationConfigurationProperties applicationProperties = endpoint
-										.configurationProperties();
-								assertThat(applicationProperties.getContexts())
-										.containsOnlyKeys(child.getId(), parent.getId());
-								assertThat(applicationProperties.getContexts()
-										.get(child.getId()).getBeans().keySet())
-												.containsExactly("someProperties");
-								assertThat((applicationProperties.getContexts()
-										.get(parent.getId()).getBeans().keySet()))
-												.containsExactly("testProperties");
-							});
-				});
+	void configurationPropertiesClass() {
+		new ApplicationContextRunner().withUserConfiguration(Parent.class).run((parent) -> {
+			new ApplicationContextRunner().withUserConfiguration(ClassConfigurationProperties.class).withParent(parent)
+					.run((child) -> {
+						ConfigurationPropertiesReportEndpoint endpoint = child
+								.getBean(ConfigurationPropertiesReportEndpoint.class);
+						ApplicationConfigurationProperties applicationProperties = endpoint.configurationProperties();
+						assertThat(applicationProperties.getContexts()).containsOnlyKeys(child.getId(), parent.getId());
+						assertThat(applicationProperties.getContexts().get(child.getId()).getBeans().keySet())
+								.containsExactly("someProperties");
+						assertThat((applicationProperties.getContexts().get(parent.getId()).getBeans().keySet()))
+								.containsExactly("testProperties");
+					});
+		});
 	}
 
 	@Test
-	public void configurationPropertiesBeanMethod() {
-		new ApplicationContextRunner().withUserConfiguration(Parent.class)
-				.run((parent) -> {
-					new ApplicationContextRunner()
-							.withUserConfiguration(
-									BeanMethodConfigurationProperties.class)
-							.withParent(parent).run((child) -> {
-								ConfigurationPropertiesReportEndpoint endpoint = child
-										.getBean(
-												ConfigurationPropertiesReportEndpoint.class);
-								ApplicationConfigurationProperties applicationProperties = endpoint
-										.configurationProperties();
-								assertThat(applicationProperties.getContexts()
-										.get(child.getId()).getBeans().keySet())
-												.containsExactlyInAnyOrder(
-														"otherProperties");
-								assertThat((applicationProperties.getContexts()
-										.get(parent.getId()).getBeans().keySet()))
-												.containsExactly("testProperties");
-							});
-				});
+	void configurationPropertiesBeanMethod() {
+		new ApplicationContextRunner().withUserConfiguration(Parent.class).run((parent) -> {
+			new ApplicationContextRunner().withUserConfiguration(BeanMethodConfigurationProperties.class)
+					.withParent(parent).run((child) -> {
+						ConfigurationPropertiesReportEndpoint endpoint = child
+								.getBean(ConfigurationPropertiesReportEndpoint.class);
+						ApplicationConfigurationProperties applicationProperties = endpoint.configurationProperties();
+						assertThat(applicationProperties.getContexts().get(child.getId()).getBeans().keySet())
+								.containsExactlyInAnyOrder("otherProperties");
+						assertThat((applicationProperties.getContexts().get(parent.getId()).getBeans().keySet()))
+								.containsExactly("testProperties");
+					});
+		});
 	}
 
 	@Configuration(proxyBeanMethods = false)
 	@EnableConfigurationProperties
-	public static class Parent {
+	static class Parent {
 
 		@Bean
-		public TestProperties testProperties() {
+		TestProperties testProperties() {
 			return new TestProperties();
 		}
 
@@ -97,15 +82,15 @@ public class ConfigurationPropertiesReportEndpointParentTests {
 
 	@Configuration(proxyBeanMethods = false)
 	@EnableConfigurationProperties
-	public static class ClassConfigurationProperties {
+	static class ClassConfigurationProperties {
 
 		@Bean
-		public ConfigurationPropertiesReportEndpoint endpoint() {
+		ConfigurationPropertiesReportEndpoint endpoint() {
 			return new ConfigurationPropertiesReportEndpoint();
 		}
 
 		@Bean
-		public TestProperties someProperties() {
+		TestProperties someProperties() {
 			return new TestProperties();
 		}
 
@@ -113,35 +98,35 @@ public class ConfigurationPropertiesReportEndpointParentTests {
 
 	@Configuration(proxyBeanMethods = false)
 	@EnableConfigurationProperties
-	public static class BeanMethodConfigurationProperties {
+	static class BeanMethodConfigurationProperties {
 
 		@Bean
-		public ConfigurationPropertiesReportEndpoint endpoint() {
+		ConfigurationPropertiesReportEndpoint endpoint() {
 			return new ConfigurationPropertiesReportEndpoint();
 		}
 
 		@Bean
 		@ConfigurationProperties(prefix = "other")
-		public OtherProperties otherProperties() {
+		OtherProperties otherProperties() {
 			return new OtherProperties();
 		}
 
 	}
 
-	public static class OtherProperties {
+	static class OtherProperties {
 
 	}
 
 	@ConfigurationProperties(prefix = "test")
-	public static class TestProperties {
+	static class TestProperties {
 
 		private String myTestProperty = "654321";
 
-		public String getMyTestProperty() {
+		String getMyTestProperty() {
 			return this.myTestProperty;
 		}
 
-		public void setMyTestProperty(String myTestProperty) {
+		void setMyTestProperty(String myTestProperty) {
 			this.myTestProperty = myTestProperty;
 		}
 

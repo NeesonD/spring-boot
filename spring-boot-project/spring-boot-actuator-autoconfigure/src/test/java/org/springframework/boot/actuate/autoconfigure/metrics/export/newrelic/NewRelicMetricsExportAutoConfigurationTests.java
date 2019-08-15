@@ -35,78 +35,71 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * @author Andy Wilkinson
  */
-public class NewRelicMetricsExportAutoConfigurationTests {
+class NewRelicMetricsExportAutoConfigurationTests {
 
 	private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-			.withConfiguration(
-					AutoConfigurations.of(NewRelicMetricsExportAutoConfiguration.class));
+			.withConfiguration(AutoConfigurations.of(NewRelicMetricsExportAutoConfiguration.class));
 
 	@Test
-	public void backsOffWithoutAClock() {
-		this.contextRunner.run((context) -> assertThat(context)
-				.doesNotHaveBean(NewRelicMeterRegistry.class));
+	void backsOffWithoutAClock() {
+		this.contextRunner.run((context) -> assertThat(context).doesNotHaveBean(NewRelicMeterRegistry.class));
 	}
 
 	@Test
-	public void failsWithoutAnApiKey() {
+	void failsWithoutAnApiKey() {
 		this.contextRunner.withUserConfiguration(BaseConfiguration.class)
 				.withPropertyValues("management.metrics.export.newrelic.account-id=12345")
 				.run((context) -> assertThat(context).hasFailed());
 	}
 
 	@Test
-	public void failsWithoutAnAccountId() {
+	void failsWithoutAnAccountId() {
 		this.contextRunner.withUserConfiguration(BaseConfiguration.class)
 				.withPropertyValues("management.metrics.export.newrelic.api-key=abcde")
 				.run((context) -> assertThat(context).hasFailed());
 	}
 
 	@Test
-	public void autoConfiguresWithAccountIdAndApiKey() {
+	void autoConfiguresWithAccountIdAndApiKey() {
 		this.contextRunner.withUserConfiguration(BaseConfiguration.class)
 				.withPropertyValues("management.metrics.export.newrelic.api-key=abcde",
 						"management.metrics.export.newrelic.account-id=12345")
-				.run((context) -> assertThat(context)
-						.hasSingleBean(NewRelicMeterRegistry.class)
+				.run((context) -> assertThat(context).hasSingleBean(NewRelicMeterRegistry.class)
 						.hasSingleBean(Clock.class).hasSingleBean(NewRelicConfig.class));
 	}
 
 	@Test
-	public void autoConfigurationCanBeDisabled() {
+	void autoConfigurationCanBeDisabled() {
 		this.contextRunner.withUserConfiguration(BaseConfiguration.class)
 				.withPropertyValues("management.metrics.export.newrelic.enabled=false")
-				.run((context) -> assertThat(context)
-						.doesNotHaveBean(NewRelicMeterRegistry.class)
+				.run((context) -> assertThat(context).doesNotHaveBean(NewRelicMeterRegistry.class)
 						.doesNotHaveBean(NewRelicConfig.class));
 	}
 
 	@Test
-	public void allowsConfigToBeCustomized() {
+	void allowsConfigToBeCustomized() {
 		this.contextRunner.withUserConfiguration(CustomConfigConfiguration.class)
 				.withPropertyValues("management.metrics.export.newrelic.api-key=abcde",
 						"management.metrics.export.newrelic.account-id=12345")
-				.run((context) -> assertThat(context).hasSingleBean(NewRelicConfig.class)
-						.hasBean("customConfig"));
+				.run((context) -> assertThat(context).hasSingleBean(NewRelicConfig.class).hasBean("customConfig"));
 	}
 
 	@Test
-	public void allowsRegistryToBeCustomized() {
+	void allowsRegistryToBeCustomized() {
 		this.contextRunner.withUserConfiguration(CustomRegistryConfiguration.class)
 				.withPropertyValues("management.metrics.export.newrelic.api-key=abcde",
 						"management.metrics.export.newrelic.account-id=12345")
-				.run((context) -> assertThat(context)
-						.hasSingleBean(NewRelicMeterRegistry.class)
+				.run((context) -> assertThat(context).hasSingleBean(NewRelicMeterRegistry.class)
 						.hasBean("customRegistry"));
 	}
 
 	@Test
-	public void stopsMeterRegistryWhenContextIsClosed() {
+	void stopsMeterRegistryWhenContextIsClosed() {
 		this.contextRunner
 				.withPropertyValues("management.metrics.export.newrelic.api-key=abcde",
 						"management.metrics.export.newrelic.account-id=abcde")
 				.withUserConfiguration(BaseConfiguration.class).run((context) -> {
-					NewRelicMeterRegistry registry = context
-							.getBean(NewRelicMeterRegistry.class);
+					NewRelicMeterRegistry registry = context.getBean(NewRelicMeterRegistry.class);
 					assertThat(registry.isClosed()).isFalse();
 					context.close();
 					assertThat(registry.isClosed()).isTrue();
@@ -117,7 +110,7 @@ public class NewRelicMetricsExportAutoConfigurationTests {
 	static class BaseConfiguration {
 
 		@Bean
-		public Clock customClock() {
+		Clock customClock() {
 			return Clock.SYSTEM;
 		}
 
@@ -128,7 +121,7 @@ public class NewRelicMetricsExportAutoConfigurationTests {
 	static class CustomConfigConfiguration {
 
 		@Bean
-		public NewRelicConfig customConfig() {
+		NewRelicConfig customConfig() {
 			return (key) -> {
 				if ("newrelic.accountId".equals(key)) {
 					return "abcde";
@@ -147,7 +140,7 @@ public class NewRelicMetricsExportAutoConfigurationTests {
 	static class CustomRegistryConfiguration {
 
 		@Bean
-		public NewRelicMeterRegistry customRegistry(NewRelicConfig config, Clock clock) {
+		NewRelicMeterRegistry customRegistry(NewRelicConfig config, Clock clock) {
 			return new NewRelicMeterRegistry(config, clock);
 		}
 

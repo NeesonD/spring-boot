@@ -18,7 +18,6 @@ package org.springframework.boot.autoconfigure.liquibase;
 
 import java.util.function.Supplier;
 
-import javax.annotation.PostConstruct;
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
@@ -46,13 +45,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.orm.jpa.AbstractEntityManagerFactoryBean;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
-import org.springframework.util.Assert;
 
 /**
  * {@link EnableAutoConfiguration Auto-configuration} for Liquibase.
@@ -64,15 +61,14 @@ import org.springframework.util.Assert;
  * @author Andy Wilkinson
  * @author Dominic Gunn
  * @author Dan Zheng
+ * @author András Deák
  * @since 1.1.0
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass({ SpringLiquibase.class, DatabaseChange.class })
-@ConditionalOnProperty(prefix = "spring.liquibase", name = "enabled",
-		matchIfMissing = true)
+@ConditionalOnProperty(prefix = "spring.liquibase", name = "enabled", matchIfMissing = true)
 @Conditional(LiquibaseDataSourceCondition.class)
-@AutoConfigureAfter({ DataSourceAutoConfiguration.class,
-		HibernateJpaAutoConfiguration.class })
+@AutoConfigureAfter({ DataSourceAutoConfiguration.class, HibernateJpaAutoConfiguration.class })
 public class LiquibaseAutoConfiguration {
 
 	@Bean
@@ -83,8 +79,7 @@ public class LiquibaseAutoConfiguration {
 
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnMissingBean(SpringLiquibase.class)
-	@EnableConfigurationProperties({ DataSourceProperties.class,
-			LiquibaseProperties.class })
+	@EnableConfigurationProperties({ DataSourceProperties.class, LiquibaseProperties.class })
 	@Import(LiquibaseJpaDependencyConfiguration.class)
 	public static class LiquibaseConfiguration {
 
@@ -92,40 +87,24 @@ public class LiquibaseAutoConfiguration {
 
 		private final ResourceLoader resourceLoader;
 
-		public LiquibaseConfiguration(LiquibaseProperties properties,
-				ResourceLoader resourceLoader) {
+		public LiquibaseConfiguration(LiquibaseProperties properties, ResourceLoader resourceLoader) {
 			this.properties = properties;
 			this.resourceLoader = resourceLoader;
-		}
-
-		@PostConstruct
-		public void checkChangelogExists() {
-			if (this.properties.isCheckChangeLogLocation()) {
-				Resource resource = this.resourceLoader
-						.getResource(this.properties.getChangeLog());
-				Assert.state(resource.exists(),
-						() -> "Cannot find changelog location: " + resource
-								+ " (please add changelog or check your Liquibase "
-								+ "configuration)");
-			}
 		}
 
 		@Bean
 		public SpringLiquibase liquibase(DataSourceProperties dataSourceProperties,
 				ObjectProvider<DataSource> dataSource,
 				@LiquibaseDataSource ObjectProvider<DataSource> liquibaseDataSource) {
-			SpringLiquibase liquibase = createSpringLiquibase(
-					liquibaseDataSource.getIfAvailable(), dataSource.getIfUnique(),
-					dataSourceProperties);
+			SpringLiquibase liquibase = createSpringLiquibase(liquibaseDataSource.getIfAvailable(),
+					dataSource.getIfUnique(), dataSourceProperties);
 			liquibase.setChangeLog(this.properties.getChangeLog());
 			liquibase.setContexts(this.properties.getContexts());
 			liquibase.setDefaultSchema(this.properties.getDefaultSchema());
 			liquibase.setLiquibaseSchema(this.properties.getLiquibaseSchema());
 			liquibase.setLiquibaseTablespace(this.properties.getLiquibaseTablespace());
-			liquibase.setDatabaseChangeLogTable(
-					this.properties.getDatabaseChangeLogTable());
-			liquibase.setDatabaseChangeLogLockTable(
-					this.properties.getDatabaseChangeLogLockTable());
+			liquibase.setDatabaseChangeLogTable(this.properties.getDatabaseChangeLogTable());
+			liquibase.setDatabaseChangeLogLockTable(this.properties.getDatabaseChangeLogLockTable());
 			liquibase.setDropFirst(this.properties.isDropFirst());
 			liquibase.setShouldRun(this.properties.isEnabled());
 			liquibase.setLabels(this.properties.getLabels());
@@ -135,10 +114,9 @@ public class LiquibaseAutoConfiguration {
 			return liquibase;
 		}
 
-		private SpringLiquibase createSpringLiquibase(DataSource liquibaseDatasource,
-				DataSource dataSource, DataSourceProperties dataSourceProperties) {
-			DataSource liquibaseDataSource = getDataSource(liquibaseDatasource,
-					dataSource);
+		private SpringLiquibase createSpringLiquibase(DataSource liquibaseDatasource, DataSource dataSource,
+				DataSourceProperties dataSourceProperties) {
+			DataSource liquibaseDataSource = getDataSource(liquibaseDatasource, dataSource);
 			if (liquibaseDataSource != null) {
 				SpringLiquibase liquibase = new SpringLiquibase();
 				liquibase.setDataSource(liquibaseDataSource);
@@ -149,8 +127,7 @@ public class LiquibaseAutoConfiguration {
 			return liquibase;
 		}
 
-		private DataSource getDataSource(DataSource liquibaseDataSource,
-				DataSource dataSource) {
+		private DataSource getDataSource(DataSource liquibaseDataSource, DataSource dataSource) {
 			if (liquibaseDataSource != null) {
 				return liquibaseDataSource;
 			}
@@ -160,20 +137,14 @@ public class LiquibaseAutoConfiguration {
 			return null;
 		}
 
-		private DataSource createNewDataSource(
-				DataSourceProperties dataSourceProperties) {
-			String url = getProperty(this.properties::getUrl,
-					dataSourceProperties::getUrl);
-			String user = getProperty(this.properties::getUser,
-					dataSourceProperties::getUsername);
-			String password = getProperty(this.properties::getPassword,
-					dataSourceProperties::getPassword);
-			return DataSourceBuilder.create().url(url).username(user).password(password)
-					.build();
+		private DataSource createNewDataSource(DataSourceProperties dataSourceProperties) {
+			String url = getProperty(this.properties::getUrl, dataSourceProperties::determineUrl);
+			String user = getProperty(this.properties::getUser, dataSourceProperties::determineUsername);
+			String password = getProperty(this.properties::getPassword, dataSourceProperties::determinePassword);
+			return DataSourceBuilder.create().url(url).username(user).password(password).build();
 		}
 
-		private String getProperty(Supplier<String> property,
-				Supplier<String> defaultValue) {
+		private String getProperty(Supplier<String> property, Supplier<String> defaultValue) {
 			String value = property.get();
 			return (value != null) ? value : defaultValue.get();
 		}
@@ -187,8 +158,7 @@ public class LiquibaseAutoConfiguration {
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass(LocalContainerEntityManagerFactoryBean.class)
 	@ConditionalOnBean(AbstractEntityManagerFactoryBean.class)
-	protected static class LiquibaseJpaDependencyConfiguration
-			extends EntityManagerFactoryDependsOnPostProcessor {
+	protected static class LiquibaseJpaDependencyConfiguration extends EntityManagerFactoryDependsOnPostProcessor {
 
 		public LiquibaseJpaDependencyConfiguration() {
 			super("liquibase");
@@ -203,8 +173,7 @@ public class LiquibaseAutoConfiguration {
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass(JdbcOperations.class)
 	@ConditionalOnBean(JdbcOperations.class)
-	protected static class LiquibaseJdbcOperationsDependencyConfiguration
-			extends JdbcOperationsDependsOnPostProcessor {
+	protected static class LiquibaseJdbcOperationsDependencyConfiguration extends JdbcOperationsDependsOnPostProcessor {
 
 		public LiquibaseJdbcOperationsDependencyConfiguration() {
 			super("liquibase");
@@ -239,8 +208,7 @@ public class LiquibaseAutoConfiguration {
 
 		}
 
-		@ConditionalOnProperty(prefix = "spring.liquibase", name = "url",
-				matchIfMissing = false)
+		@ConditionalOnProperty(prefix = "spring.liquibase", name = "url", matchIfMissing = false)
 		private static final class LiquibaseUrlCondition {
 
 		}

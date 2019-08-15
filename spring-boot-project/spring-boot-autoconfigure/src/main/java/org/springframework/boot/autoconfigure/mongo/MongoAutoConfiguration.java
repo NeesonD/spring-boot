@@ -36,6 +36,7 @@ import org.springframework.core.env.Environment;
  * @author Phillip Webb
  * @author Mark Paluch
  * @author Stephane Nicoll
+ * @since 1.0.0
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(MongoClient.class)
@@ -44,12 +45,10 @@ import org.springframework.core.env.Environment;
 public class MongoAutoConfiguration {
 
 	@Bean
-	@ConditionalOnMissingBean(
-			type = { "com.mongodb.MongoClient", "com.mongodb.client.MongoClient" })
-	public MongoClient mongo(MongoProperties properties,
-			ObjectProvider<MongoClientOptions> options, Environment environment) {
-		return new MongoClientFactory(properties, environment)
-				.createMongoClient(options.getIfAvailable());
+	@ConditionalOnMissingBean(type = { "com.mongodb.MongoClient", "com.mongodb.client.MongoClient" })
+	public MongoClient mongo(MongoProperties properties, ObjectProvider<MongoClientOptions> options,
+			Environment environment) {
+		return new MongoClientFactory(properties, environment).createMongoClient(options.getIfAvailable());
 	}
 
 }

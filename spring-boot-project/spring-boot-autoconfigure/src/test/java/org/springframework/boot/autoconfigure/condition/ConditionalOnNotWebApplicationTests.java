@@ -37,41 +37,37 @@ import static org.assertj.core.api.Assertions.entry;
  * @author Dave Syer
  * @author Stephane Nicoll
  */
-public class ConditionalOnNotWebApplicationTests {
+class ConditionalOnNotWebApplicationTests {
 
 	@Test
-	public void testNotWebApplicationWithServletContext() {
-		new WebApplicationContextRunner()
-				.withUserConfiguration(NotWebApplicationConfiguration.class)
+	void testNotWebApplicationWithServletContext() {
+		new WebApplicationContextRunner().withUserConfiguration(NotWebApplicationConfiguration.class)
 				.run((context) -> assertThat(context).doesNotHaveBean(String.class));
 	}
 
 	@Test
-	public void testNotWebApplicationWithReactiveContext() {
+	void testNotWebApplicationWithReactiveContext() {
 		new ReactiveWebApplicationContextRunner()
-				.withUserConfiguration(ReactiveApplicationConfig.class,
-						NotWebApplicationConfiguration.class)
+				.withUserConfiguration(ReactiveApplicationConfig.class, NotWebApplicationConfiguration.class)
 				.run((context) -> assertThat(context).doesNotHaveBean(String.class));
 	}
 
 	@Test
-	public void testNotWebApplication() {
-		new ApplicationContextRunner()
-				.withUserConfiguration(NotWebApplicationConfiguration.class)
-				.run((context) -> assertThat(context).getBeans(String.class)
-						.containsExactly(entry("none", "none")));
+	void testNotWebApplication() {
+		new ApplicationContextRunner().withUserConfiguration(NotWebApplicationConfiguration.class)
+				.run((context) -> assertThat(context).getBeans(String.class).containsExactly(entry("none", "none")));
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	protected static class ReactiveApplicationConfig {
+	static class ReactiveApplicationConfig {
 
 		@Bean
-		public ReactiveWebServerFactory reactiveWebServerFactory() {
+		ReactiveWebServerFactory reactiveWebServerFactory() {
 			return new MockReactiveWebServerFactory();
 		}
 
 		@Bean
-		public HttpHandler httpHandler() {
+		HttpHandler httpHandler() {
 			return (request, response) -> Mono.empty();
 		}
 
@@ -79,10 +75,10 @@ public class ConditionalOnNotWebApplicationTests {
 
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnNotWebApplication
-	protected static class NotWebApplicationConfiguration {
+	static class NotWebApplicationConfiguration {
 
 		@Bean
-		public String none() {
+		String none() {
 			return "none";
 		}
 

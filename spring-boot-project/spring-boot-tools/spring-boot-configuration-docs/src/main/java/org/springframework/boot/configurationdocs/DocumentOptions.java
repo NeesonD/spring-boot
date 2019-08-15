@@ -25,6 +25,7 @@ import java.util.Map;
  * Options for generating documentation for configuration properties.
  *
  * @author Brian Clozel
+ * @since 2.0.0
  */
 public final class DocumentOptions {
 
@@ -32,8 +33,7 @@ public final class DocumentOptions {
 
 	private final Map<String, String> overrides;
 
-	private DocumentOptions(Map<String, List<String>> metadataSections,
-			Map<String, String> overrides) {
+	private DocumentOptions(Map<String, List<String>> metadataSections, Map<String, String> overrides) {
 		this.metadataSections = metadataSections;
 		this.overrides = overrides;
 	}

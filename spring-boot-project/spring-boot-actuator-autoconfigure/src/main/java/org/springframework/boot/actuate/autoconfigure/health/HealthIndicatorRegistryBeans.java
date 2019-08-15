@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,12 +37,11 @@ final class HealthIndicatorRegistryBeans {
 	private HealthIndicatorRegistryBeans() {
 	}
 
-	public static HealthIndicatorRegistry get(ApplicationContext applicationContext) {
-		Map<String, HealthIndicator> indicators = new LinkedHashMap<>();
-		indicators.putAll(applicationContext.getBeansOfType(HealthIndicator.class));
+	static HealthIndicatorRegistry get(ApplicationContext applicationContext) {
+		Map<String, HealthIndicator> indicators = new LinkedHashMap<>(
+				applicationContext.getBeansOfType(HealthIndicator.class));
 		if (ClassUtils.isPresent("reactor.core.publisher.Flux", null)) {
-			new ReactiveHealthIndicators().get(applicationContext)
-					.forEach(indicators::putIfAbsent);
+			new ReactiveHealthIndicators().get(applicationContext).forEach(indicators::putIfAbsent);
 		}
 		HealthIndicatorRegistryFactory factory = new HealthIndicatorRegistryFactory();
 		return factory.createHealthIndicatorRegistry(indicators);
@@ -50,7 +49,7 @@ final class HealthIndicatorRegistryBeans {
 
 	private static class ReactiveHealthIndicators {
 
-		public Map<String, HealthIndicator> get(ApplicationContext applicationContext) {
+		Map<String, HealthIndicator> get(ApplicationContext applicationContext) {
 			Map<String, HealthIndicator> indicators = new LinkedHashMap<>();
 			applicationContext.getBeansOfType(ReactiveHealthIndicator.class)
 					.forEach((name, indicator) -> indicators.put(name, adapt(indicator)));

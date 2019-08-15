@@ -33,31 +33,28 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Tests for {@link AllNestedConditions}.
  */
-public class AllNestedConditionsTests {
+class AllNestedConditionsTests {
 
 	private final ApplicationContextRunner contextRunner = new ApplicationContextRunner();
 
 	@Test
-	public void neither() {
+	void neither() {
 		this.contextRunner.withUserConfiguration(Config.class).run(match(false));
 	}
 
 	@Test
-	public void propertyA() {
-		this.contextRunner.withUserConfiguration(Config.class).withPropertyValues("a:a")
-				.run(match(false));
+	void propertyA() {
+		this.contextRunner.withUserConfiguration(Config.class).withPropertyValues("a:a").run(match(false));
 	}
 
 	@Test
-	public void propertyB() {
-		this.contextRunner.withUserConfiguration(Config.class).withPropertyValues("b:b")
-				.run(match(false));
+	void propertyB() {
+		this.contextRunner.withUserConfiguration(Config.class).withPropertyValues("b:b").run(match(false));
 	}
 
 	@Test
-	public void both() {
-		this.contextRunner.withUserConfiguration(Config.class)
-				.withPropertyValues("a:a", "b:b").run(match(true));
+	void both() {
+		this.contextRunner.withUserConfiguration(Config.class).withPropertyValues("a:a", "b:b").run(match(true));
 	}
 
 	private ContextConsumer<AssertableApplicationContext> match(boolean expected) {
@@ -73,10 +70,10 @@ public class AllNestedConditionsTests {
 
 	@Configuration(proxyBeanMethods = false)
 	@Conditional(OnPropertyAAndBCondition.class)
-	public static class Config {
+	static class Config {
 
 		@Bean
-		public String myBean() {
+		String myBean() {
 			return "myBean";
 		}
 

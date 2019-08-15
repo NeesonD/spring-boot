@@ -35,7 +35,6 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
  *
  * @author Andy Wilkinson
  * @author Eddú Meléndez
- * @since 1.2.2
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(Gson.class)
@@ -44,11 +43,11 @@ class GsonHttpMessageConvertersConfiguration {
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnBean(Gson.class)
 	@Conditional(PreferGsonOrJacksonAndJsonbUnavailableCondition.class)
-	protected static class GsonHttpMessageConverterConfiguration {
+	static class GsonHttpMessageConverterConfiguration {
 
 		@Bean
 		@ConditionalOnMissingBean
-		public GsonHttpMessageConverter gsonHttpMessageConverter(Gson gson) {
+		GsonHttpMessageConverter gsonHttpMessageConverter(Gson gson) {
 			GsonHttpMessageConverter converter = new GsonHttpMessageConverter();
 			converter.setGson(gson);
 			return converter;
@@ -56,15 +55,13 @@ class GsonHttpMessageConvertersConfiguration {
 
 	}
 
-	private static class PreferGsonOrJacksonAndJsonbUnavailableCondition
-			extends AnyNestedCondition {
+	private static class PreferGsonOrJacksonAndJsonbUnavailableCondition extends AnyNestedCondition {
 
 		PreferGsonOrJacksonAndJsonbUnavailableCondition() {
 			super(ConfigurationPhase.REGISTER_BEAN);
 		}
 
-		@ConditionalOnProperty(
-				name = HttpMessageConvertersAutoConfiguration.PREFERRED_MAPPER_PROPERTY,
+		@ConditionalOnProperty(name = HttpMessageConvertersAutoConfiguration.PREFERRED_MAPPER_PROPERTY,
 				havingValue = "gson")
 		static class GsonPreferred {
 
@@ -77,8 +74,7 @@ class GsonHttpMessageConvertersConfiguration {
 
 	}
 
-	private static class JacksonAndJsonbUnavailableCondition
-			extends NoneNestedConditions {
+	private static class JacksonAndJsonbUnavailableCondition extends NoneNestedConditions {
 
 		JacksonAndJsonbUnavailableCondition() {
 			super(ConfigurationPhase.REGISTER_BEAN);
@@ -89,8 +85,7 @@ class GsonHttpMessageConvertersConfiguration {
 
 		}
 
-		@ConditionalOnProperty(
-				name = HttpMessageConvertersAutoConfiguration.PREFERRED_MAPPER_PROPERTY,
+		@ConditionalOnProperty(name = HttpMessageConvertersAutoConfiguration.PREFERRED_MAPPER_PROPERTY,
 				havingValue = "jsonb")
 		static class JsonbPreferred {
 

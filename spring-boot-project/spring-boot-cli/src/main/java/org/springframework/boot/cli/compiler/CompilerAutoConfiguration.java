@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.codehaus.groovy.control.customizers.ImportCustomizer;
  * {@link CompilePhase#CONVERSION} Groovy compile phase.
  *
  * @author Phillip Webb
+ * @since 1.0.0
  */
 public abstract class CompilerAutoConfiguration {
 
@@ -49,8 +50,7 @@ public abstract class CompilerAutoConfiguration {
 	 * @param dependencies dependency customizer
 	 * @throws CompilationFailedException if the dependencies cannot be applied
 	 */
-	public void applyDependencies(DependencyCustomizer dependencies)
-			throws CompilationFailedException {
+	public void applyDependencies(DependencyCustomizer dependencies) throws CompilationFailedException {
 	}
 
 	/**
@@ -73,9 +73,9 @@ public abstract class CompilerAutoConfiguration {
 	 * @param classNode the main class
 	 * @throws CompilationFailedException if the customizations cannot be applied
 	 */
-	public void applyToMainClass(GroovyClassLoader loader,
-			GroovyCompilerConfiguration configuration, GeneratorContext generatorContext,
-			SourceUnit source, ClassNode classNode) throws CompilationFailedException {
+	public void applyToMainClass(GroovyClassLoader loader, GroovyCompilerConfiguration configuration,
+			GeneratorContext generatorContext, SourceUnit source, ClassNode classNode)
+			throws CompilationFailedException {
 	}
 
 	/**

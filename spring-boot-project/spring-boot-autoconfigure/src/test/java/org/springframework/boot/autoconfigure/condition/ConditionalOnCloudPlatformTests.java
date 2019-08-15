@@ -28,28 +28,26 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Tests for {@link ConditionalOnCloudPlatform @ConditionalOnCloudPlatform}.
  */
-public class ConditionalOnCloudPlatformTests {
+class ConditionalOnCloudPlatformTests {
 
 	private final ApplicationContextRunner contextRunner = new ApplicationContextRunner();
 
 	@Test
-	public void outcomeWhenCloudfoundryPlatformNotPresentShouldNotMatch() {
+	void outcomeWhenCloudfoundryPlatformNotPresentShouldNotMatch() {
 		this.contextRunner.withUserConfiguration(CloudFoundryPlatformConfig.class)
 				.run((context) -> assertThat(context).doesNotHaveBean("foo"));
 	}
 
 	@Test
-	public void outcomeWhenCloudfoundryPlatformPresentShouldMatch() {
+	void outcomeWhenCloudfoundryPlatformPresentShouldMatch() {
 		this.contextRunner.withUserConfiguration(CloudFoundryPlatformConfig.class)
-				.withPropertyValues("VCAP_APPLICATION:---")
-				.run((context) -> assertThat(context).hasBean("foo"));
+				.withPropertyValues("VCAP_APPLICATION:---").run((context) -> assertThat(context).hasBean("foo"));
 	}
 
 	@Test
-	public void outcomeWhenCloudfoundryPlatformPresentAndMethodTargetShouldMatch() {
+	void outcomeWhenCloudfoundryPlatformPresentAndMethodTargetShouldMatch() {
 		this.contextRunner.withUserConfiguration(CloudFoundryPlatformOnMethodConfig.class)
-				.withPropertyValues("VCAP_APPLICATION:---")
-				.run((context) -> assertThat(context).hasBean("foo"));
+				.withPropertyValues("VCAP_APPLICATION:---").run((context) -> assertThat(context).hasBean("foo"));
 	}
 
 	@Configuration(proxyBeanMethods = false)
@@ -57,7 +55,7 @@ public class ConditionalOnCloudPlatformTests {
 	static class CloudFoundryPlatformConfig {
 
 		@Bean
-		public String foo() {
+		String foo() {
 			return "foo";
 		}
 
@@ -68,7 +66,7 @@ public class ConditionalOnCloudPlatformTests {
 
 		@Bean
 		@ConditionalOnCloudPlatform(CloudPlatform.CLOUD_FOUNDRY)
-		public String foo() {
+		String foo() {
 			return "foo";
 		}
 

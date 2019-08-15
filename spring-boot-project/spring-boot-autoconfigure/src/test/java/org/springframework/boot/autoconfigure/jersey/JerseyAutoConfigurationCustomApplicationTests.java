@@ -46,20 +46,19 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @DirtiesContext
-public class JerseyAutoConfigurationCustomApplicationTests {
+class JerseyAutoConfigurationCustomApplicationTests {
 
 	@Autowired
 	private TestRestTemplate restTemplate;
 
 	@Test
-	public void contextLoads() {
-		ResponseEntity<String> entity = this.restTemplate.getForEntity("/test/hello",
-				String.class);
+	void contextLoads() {
+		ResponseEntity<String> entity = this.restTemplate.getForEntity("/test/hello", String.class);
 		assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.OK);
 	}
 
 	@ApplicationPath("/test")
-	public static class TestApplication extends Application {
+	static class TestApplication extends Application {
 
 	}
 
@@ -74,8 +73,8 @@ public class JerseyAutoConfigurationCustomApplicationTests {
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	@Import({ ServletWebServerFactoryAutoConfiguration.class,
-			JerseyAutoConfiguration.class, PropertyPlaceholderAutoConfiguration.class })
+	@Import({ ServletWebServerFactoryAutoConfiguration.class, JerseyAutoConfiguration.class,
+			PropertyPlaceholderAutoConfiguration.class })
 	static class TestConfiguration {
 
 		@Configuration(proxyBeanMethods = false)

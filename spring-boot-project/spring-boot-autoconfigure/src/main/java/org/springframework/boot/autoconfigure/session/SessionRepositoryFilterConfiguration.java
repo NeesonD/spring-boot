@@ -39,24 +39,21 @@ import org.springframework.session.web.http.SessionRepositoryFilter;
 class SessionRepositoryFilterConfiguration {
 
 	@Bean
-	public FilterRegistrationBean<SessionRepositoryFilter<?>> sessionRepositoryFilterRegistration(
+	FilterRegistrationBean<SessionRepositoryFilter<?>> sessionRepositoryFilterRegistration(
 			SessionProperties sessionProperties, SessionRepositoryFilter<?> filter) {
-		FilterRegistrationBean<SessionRepositoryFilter<?>> registration = new FilterRegistrationBean<>(
-				filter);
+		FilterRegistrationBean<SessionRepositoryFilter<?>> registration = new FilterRegistrationBean<>(filter);
 		registration.setDispatcherTypes(getDispatcherTypes(sessionProperties));
 		registration.setOrder(sessionProperties.getServlet().getFilterOrder());
 		return registration;
 	}
 
-	private EnumSet<DispatcherType> getDispatcherTypes(
-			SessionProperties sessionProperties) {
+	private EnumSet<DispatcherType> getDispatcherTypes(SessionProperties sessionProperties) {
 		SessionProperties.Servlet servletProperties = sessionProperties.getServlet();
 		if (servletProperties.getFilterDispatcherTypes() == null) {
 			return null;
 		}
-		return servletProperties.getFilterDispatcherTypes().stream()
-				.map((type) -> DispatcherType.valueOf(type.name())).collect(Collectors
-						.collectingAndThen(Collectors.toSet(), EnumSet::copyOf));
+		return servletProperties.getFilterDispatcherTypes().stream().map((type) -> DispatcherType.valueOf(type.name()))
+				.collect(Collectors.collectingAndThen(Collectors.toSet(), EnumSet::copyOf));
 	}
 
 }

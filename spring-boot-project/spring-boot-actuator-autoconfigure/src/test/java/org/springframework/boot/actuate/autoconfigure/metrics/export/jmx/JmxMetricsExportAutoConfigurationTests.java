@@ -34,67 +34,56 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * @author Andy Wilkinson
  */
-public class JmxMetricsExportAutoConfigurationTests {
+class JmxMetricsExportAutoConfigurationTests {
 
 	private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-			.withConfiguration(
-					AutoConfigurations.of(JmxMetricsExportAutoConfiguration.class));
+			.withConfiguration(AutoConfigurations.of(JmxMetricsExportAutoConfiguration.class));
 
 	@Test
-	public void backsOffWithoutAClock() {
-		this.contextRunner.run(
-				(context) -> assertThat(context).doesNotHaveBean(JmxMeterRegistry.class));
+	void backsOffWithoutAClock() {
+		this.contextRunner.run((context) -> assertThat(context).doesNotHaveBean(JmxMeterRegistry.class));
 	}
 
 	@Test
-	public void autoConfiguresItsConfigAndMeterRegistry() {
+	void autoConfiguresItsConfigAndMeterRegistry() {
+		this.contextRunner.withUserConfiguration(BaseConfiguration.class).run(
+				(context) -> assertThat(context).hasSingleBean(JmxMeterRegistry.class).hasSingleBean(JmxConfig.class));
+	}
+
+	@Test
+	void autoConfigurationCanBeDisabled() {
 		this.contextRunner.withUserConfiguration(BaseConfiguration.class)
-				.run((context) -> assertThat(context)
-						.hasSingleBean(JmxMeterRegistry.class)
-						.hasSingleBean(JmxConfig.class));
+				.withPropertyValues("management.metrics.export.jmx.enabled=false").run((context) -> assertThat(context)
+						.doesNotHaveBean(JmxMeterRegistry.class).doesNotHaveBean(JmxConfig.class));
 	}
 
 	@Test
-	public void autoConfigurationCanBeDisabled() {
-		this.contextRunner.withUserConfiguration(BaseConfiguration.class)
-				.withPropertyValues("management.metrics.export.jmx.enabled=false")
-				.run((context) -> assertThat(context)
-						.doesNotHaveBean(JmxMeterRegistry.class)
-						.doesNotHaveBean(JmxConfig.class));
+	void allowsCustomConfigToBeUsed() {
+		this.contextRunner.withUserConfiguration(CustomConfigConfiguration.class).run((context) -> assertThat(context)
+				.hasSingleBean(JmxMeterRegistry.class).hasSingleBean(JmxConfig.class).hasBean("customConfig"));
 	}
 
 	@Test
-	public void allowsCustomConfigToBeUsed() {
-		this.contextRunner.withUserConfiguration(CustomConfigConfiguration.class)
-				.run((context) -> assertThat(context)
-						.hasSingleBean(JmxMeterRegistry.class)
-						.hasSingleBean(JmxConfig.class).hasBean("customConfig"));
+	void allowsCustomRegistryToBeUsed() {
+		this.contextRunner.withUserConfiguration(CustomRegistryConfiguration.class).run((context) -> assertThat(context)
+				.hasSingleBean(JmxMeterRegistry.class).hasBean("customRegistry").hasSingleBean(JmxConfig.class));
 	}
 
 	@Test
-	public void allowsCustomRegistryToBeUsed() {
-		this.contextRunner.withUserConfiguration(CustomRegistryConfiguration.class)
-				.run((context) -> assertThat(context)
-						.hasSingleBean(JmxMeterRegistry.class).hasBean("customRegistry")
-						.hasSingleBean(JmxConfig.class));
-	}
-
-	@Test
-	public void stopsMeterRegistryWhenContextIsClosed() {
-		this.contextRunner.withUserConfiguration(BaseConfiguration.class)
-				.run((context) -> {
-					JmxMeterRegistry registry = context.getBean(JmxMeterRegistry.class);
-					assertThat(registry.isClosed()).isFalse();
-					context.close();
-					assertThat(registry.isClosed()).isTrue();
-				});
+	void stopsMeterRegistryWhenContextIsClosed() {
+		this.contextRunner.withUserConfiguration(BaseConfiguration.class).run((context) -> {
+			JmxMeterRegistry registry = context.getBean(JmxMeterRegistry.class);
+			assertThat(registry.isClosed()).isFalse();
+			context.close();
+			assertThat(registry.isClosed()).isTrue();
+		});
 	}
 
 	@Configuration(proxyBeanMethods = false)
 	static class BaseConfiguration {
 
 		@Bean
-		public Clock clock() {
+		Clock clock() {
 			return Clock.SYSTEM;
 		}
 
@@ -105,7 +94,7 @@ public class JmxMetricsExportAutoConfigurationTests {
 	static class CustomConfigConfiguration {
 
 		@Bean
-		public JmxConfig customConfig() {
+		JmxConfig customConfig() {
 			return (key) -> null;
 		}
 
@@ -116,7 +105,7 @@ public class JmxMetricsExportAutoConfigurationTests {
 	static class CustomRegistryConfiguration {
 
 		@Bean
-		public JmxMeterRegistry customRegistry(JmxConfig config, Clock clock) {
+		JmxMeterRegistry customRegistry(JmxConfig config, Clock clock) {
 			return new JmxMeterRegistry(config, clock);
 		}
 

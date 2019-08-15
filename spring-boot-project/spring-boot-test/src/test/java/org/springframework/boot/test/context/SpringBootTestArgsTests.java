@@ -31,21 +31,20 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Stephane Nicoll
  */
 @SpringBootTest(args = { "--option.foo=foo-value", "other.bar=other-bar-value" })
-public class SpringBootTestArgsTests {
+class SpringBootTestArgsTests {
 
 	@Autowired
 	private ApplicationArguments args;
 
 	@Test
-	public void applicationArgumentsPopulated() {
+	void applicationArgumentsPopulated() {
 		assertThat(this.args.getOptionNames()).containsOnly("option.foo");
 		assertThat(this.args.getOptionValues("option.foo")).containsOnly("foo-value");
-		assertThat(this.args.getNonOptionArgs())
-				.containsOnly("other.bar=other-bar-value");
+		assertThat(this.args.getNonOptionArgs()).containsOnly("other.bar=other-bar-value");
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	protected static class Config {
+	static class Config {
 
 	}
 

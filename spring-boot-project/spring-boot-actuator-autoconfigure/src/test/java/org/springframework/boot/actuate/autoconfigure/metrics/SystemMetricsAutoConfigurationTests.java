@@ -35,52 +35,43 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Andy Wilkinson
  * @author Stephane Nicoll
  */
-public class SystemMetricsAutoConfigurationTests {
+class SystemMetricsAutoConfigurationTests {
 
-	private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-			.with(MetricsRun.simple()).withConfiguration(
-					AutoConfigurations.of(SystemMetricsAutoConfiguration.class));
+	private final ApplicationContextRunner contextRunner = new ApplicationContextRunner().with(MetricsRun.simple())
+			.withConfiguration(AutoConfigurations.of(SystemMetricsAutoConfiguration.class));
 
 	@Test
-	public void autoConfiguresUptimeMetrics() {
-		this.contextRunner
-				.run((context) -> assertThat(context).hasSingleBean(UptimeMetrics.class));
+	void autoConfiguresUptimeMetrics() {
+		this.contextRunner.run((context) -> assertThat(context).hasSingleBean(UptimeMetrics.class));
 	}
 
 	@Test
-	public void allowsCustomUptimeMetricsToBeUsed() {
-		this.contextRunner.withUserConfiguration(CustomUptimeMetricsConfiguration.class)
-				.run((context) -> assertThat(context).hasSingleBean(UptimeMetrics.class)
-						.hasBean("customUptimeMetrics"));
+	void allowsCustomUptimeMetricsToBeUsed() {
+		this.contextRunner.withUserConfiguration(CustomUptimeMetricsConfiguration.class).run(
+				(context) -> assertThat(context).hasSingleBean(UptimeMetrics.class).hasBean("customUptimeMetrics"));
 	}
 
 	@Test
-	public void autoConfiguresProcessorMetrics() {
-		this.contextRunner.run(
-				(context) -> assertThat(context).hasSingleBean(ProcessorMetrics.class));
+	void autoConfiguresProcessorMetrics() {
+		this.contextRunner.run((context) -> assertThat(context).hasSingleBean(ProcessorMetrics.class));
 	}
 
 	@Test
-	public void allowsCustomProcessorMetricsToBeUsed() {
-		this.contextRunner
-				.withUserConfiguration(CustomProcessorMetricsConfiguration.class)
-				.run((context) -> assertThat(context)
-						.hasSingleBean(ProcessorMetrics.class)
+	void allowsCustomProcessorMetricsToBeUsed() {
+		this.contextRunner.withUserConfiguration(CustomProcessorMetricsConfiguration.class)
+				.run((context) -> assertThat(context).hasSingleBean(ProcessorMetrics.class)
 						.hasBean("customProcessorMetrics"));
 	}
 
 	@Test
-	public void autoConfiguresFileDescriptorMetrics() {
-		this.contextRunner.run((context) -> assertThat(context)
-				.hasSingleBean(FileDescriptorMetrics.class));
+	void autoConfiguresFileDescriptorMetrics() {
+		this.contextRunner.run((context) -> assertThat(context).hasSingleBean(FileDescriptorMetrics.class));
 	}
 
 	@Test
-	public void allowsCustomFileDescriptorMetricsToBeUsed() {
-		this.contextRunner
-				.withUserConfiguration(CustomFileDescriptorMetricsConfiguration.class)
-				.run((context) -> assertThat(context)
-						.hasSingleBean(FileDescriptorMetrics.class)
+	void allowsCustomFileDescriptorMetricsToBeUsed() {
+		this.contextRunner.withUserConfiguration(CustomFileDescriptorMetricsConfiguration.class)
+				.run((context) -> assertThat(context).hasSingleBean(FileDescriptorMetrics.class)
 						.hasBean("customFileDescriptorMetrics"));
 	}
 
@@ -88,7 +79,7 @@ public class SystemMetricsAutoConfigurationTests {
 	static class CustomUptimeMetricsConfiguration {
 
 		@Bean
-		public UptimeMetrics customUptimeMetrics() {
+		UptimeMetrics customUptimeMetrics() {
 			return new UptimeMetrics();
 		}
 
@@ -98,7 +89,7 @@ public class SystemMetricsAutoConfigurationTests {
 	static class CustomProcessorMetricsConfiguration {
 
 		@Bean
-		public ProcessorMetrics customProcessorMetrics() {
+		ProcessorMetrics customProcessorMetrics() {
 			return new ProcessorMetrics();
 		}
 
@@ -108,7 +99,7 @@ public class SystemMetricsAutoConfigurationTests {
 	static class CustomFileDescriptorMetricsConfiguration {
 
 		@Bean
-		public FileDescriptorMetrics customFileDescriptorMetrics() {
+		FileDescriptorMetrics customFileDescriptorMetrics() {
 			return new FileDescriptorMetrics();
 		}
 

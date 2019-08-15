@@ -28,6 +28,7 @@ import org.springframework.boot.web.reactive.server.ReactiveWebServerFactory;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.http.server.reactive.HttpHandler;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -42,7 +43,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * @author Stephane Nicoll
  */
-public abstract class AbstractSpringBootTestEmbeddedReactiveWebEnvironmentTests {
+abstract class AbstractSpringBootTestEmbeddedReactiveWebEnvironmentTests {
 
 	@LocalServerPort
 	private int port = 0;
@@ -59,59 +60,58 @@ public abstract class AbstractSpringBootTestEmbeddedReactiveWebEnvironmentTests 
 	@Autowired
 	private TestRestTemplate restTemplate;
 
-	public ReactiveWebApplicationContext getContext() {
+	ReactiveWebApplicationContext getContext() {
 		return this.context;
 	}
 
 	@Test
-	public void runAndTestHttpEndpoint() {
+	void runAndTestHttpEndpoint() {
 		assertThat(this.port).isNotEqualTo(8080).isNotEqualTo(0);
-		WebTestClient.bindToServer().baseUrl("http://localhost:" + this.port).build()
-				.get().uri("/").exchange().expectBody(String.class)
-				.isEqualTo("Hello World");
+		WebTestClient.bindToServer().baseUrl("http://localhost:" + this.port).build().get().uri("/").exchange()
+				.expectBody(String.class).isEqualTo("Hello World");
 	}
 
 	@Test
-	public void injectWebTestClient() {
-		this.webClient.get().uri("/").exchange().expectBody(String.class)
-				.isEqualTo("Hello World");
+	void injectWebTestClient() {
+		this.webClient.get().uri("/").exchange().expectBody(String.class).isEqualTo("Hello World");
 	}
 
 	@Test
-	public void injectTestRestTemplate() {
+	void injectTestRestTemplate() {
 		String body = this.restTemplate.getForObject("/", String.class);
 		assertThat(body).isEqualTo("Hello World");
 	}
 
 	@Test
-	public void annotationAttributesOverridePropertiesFile() {
+	void annotationAttributesOverridePropertiesFile() {
 		assertThat(this.value).isEqualTo(123);
 	}
 
-	protected abstract static class AbstractConfig {
+	@Configuration(proxyBeanMethods = false)
+	static class AbstractConfig {
 
 		@Value("${server.port:8080}")
 		private int port = 8080;
 
 		@Bean
-		public HttpHandler httpHandler(ApplicationContext applicationContext) {
+		HttpHandler httpHandler(ApplicationContext applicationContext) {
 			return WebHttpHandlerBuilder.applicationContext(applicationContext).build();
 		}
 
 		@Bean
-		public ReactiveWebServerFactory webServerFactory() {
+		ReactiveWebServerFactory webServerFactory() {
 			TomcatReactiveWebServerFactory factory = new TomcatReactiveWebServerFactory();
 			factory.setPort(this.port);
 			return factory;
 		}
 
 		@Bean
-		public static PropertySourcesPlaceholderConfigurer propertyPlaceholder() {
+		static PropertySourcesPlaceholderConfigurer propertyPlaceholder() {
 			return new PropertySourcesPlaceholderConfigurer();
 		}
 
 		@RequestMapping("/")
-		public Mono<String> home() {
+		Mono<String> home() {
 			return Mono.just("Hello World");
 		}
 

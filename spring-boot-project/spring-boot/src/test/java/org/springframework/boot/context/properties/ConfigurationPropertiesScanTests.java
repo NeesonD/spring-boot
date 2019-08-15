@@ -16,44 +16,56 @@
 
 package org.springframework.boot.context.properties;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
+import java.io.IOException;
+import java.util.Objects;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import org.springframework.boot.context.TypeExcludeFilter;
 import org.springframework.boot.context.properties.scan.valid.a.AScanConfiguration;
+import org.springframework.boot.context.properties.scan.valid.b.BScanConfiguration.BFirstProperties;
+import org.springframework.boot.context.properties.scan.valid.b.BScanConfiguration.BProperties;
+import org.springframework.boot.context.properties.scan.valid.b.BScanConfiguration.BSecondProperties;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.type.classreading.MetadataReader;
+import org.springframework.core.type.classreading.MetadataReaderFactory;
+import org.springframework.core.type.filter.AssignableTypeFilter;
+import org.springframework.test.context.support.TestPropertySourceUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willCallRealMethod;
+import static org.mockito.Mockito.mock;
 
 /**
- * Integration tests for {@link ConfigurationPropertiesScan}.
+ * Integration tests for {@link ConfigurationPropertiesScan @ConfigurationPropertiesScan}.
  *
  * @author Madhura Bhave
  * @author Johnny Lim
+ * @author Stephane Nicoll
  */
-public class ConfigurationPropertiesScanTests {
+class ConfigurationPropertiesScanTests {
 
 	private AnnotationConfigApplicationContext context;
 
-	@Before
-	public void setup() {
+	@BeforeEach
+	void setup() {
 		this.context = new AnnotationConfigApplicationContext();
 	}
 
-	@After
-	public void teardown() {
+	@AfterEach
+	void teardown() {
 		if (this.context != null) {
 			this.context.close();
 		}
 	}
 
 	@Test
-	public void scanImportBeanRegistrarShouldBeEnvironmentAwareWithRequiredProfile() {
+	void scanImportBeanRegistrarShouldBeEnvironmentAwareWithRequiredProfile() {
 		this.context.getEnvironment().addActiveProfile("test");
 		load(TestConfiguration.class);
 		assertThat(this.context.containsBean(
@@ -62,7 +74,7 @@ public class ConfigurationPropertiesScanTests {
 	}
 
 	@Test
-	public void scanImportBeanRegistrarShouldBeEnvironmentAwareWithoutRequiredProfile() {
+	void scanImportBeanRegistrarShouldBeEnvironmentAwareWithoutRequiredProfile() {
 		load(TestConfiguration.class);
 		assertThat(this.context.containsBean(
 				"profile-org.springframework.boot.context.properties.scan.valid.a.AScanConfiguration$MyProfileProperties"))
@@ -70,12 +82,11 @@ public class ConfigurationPropertiesScanTests {
 	}
 
 	@Test
-	public void scanImportBeanRegistrarShouldBeResourceLoaderAwareWithRequiredResource() {
-		DefaultResourceLoader resourceLoader = Mockito.mock(DefaultResourceLoader.class);
+	void scanImportBeanRegistrarShouldBeResourceLoaderAwareWithRequiredResource() {
+		DefaultResourceLoader resourceLoader = mock(DefaultResourceLoader.class);
 		this.context.setResourceLoader(resourceLoader);
 		willCallRealMethod().given(resourceLoader).getClassLoader();
-		given(resourceLoader.getResource("test"))
-				.willReturn(new ByteArrayResource("test".getBytes()));
+		given(resourceLoader.getResource("test")).willReturn(new ByteArrayResource("test".getBytes()));
 		load(TestConfiguration.class);
 		assertThat(this.context.containsBean(
 				"resource-org.springframework.boot.context.properties.scan.valid.a.AScanConfiguration$MyResourceProperties"))
@@ -83,20 +94,71 @@ public class ConfigurationPropertiesScanTests {
 	}
 
 	@Test
-	public void scanImportBeanRegistrarShouldBeResourceLoaderAwareWithoutRequiredResource() {
+	void scanImportBeanRegistrarShouldBeResourceLoaderAwareWithoutRequiredResource() {
 		load(TestConfiguration.class);
 		assertThat(this.context.containsBean(
 				"resource-org.springframework.boot.context.properties.scan.valid.a.AScanConfiguration$MyResourceProperties"))
 						.isFalse();
 	}
 
-	private void load(Class<?>... classes) {
-		this.context.register(classes);
+	@Test
+	void scanImportBeanRegistrarShouldUsePackageName() {
+		load(TestAnotherPackageConfiguration.class);
+		assertThat(this.context.getBeanNamesForType(BProperties.class)).containsOnly(
+				"b.first-org.springframework.boot.context.properties.scan.valid.b.BScanConfiguration$BFirstProperties",
+				"b.second-org.springframework.boot.context.properties.scan.valid.b.BScanConfiguration$BSecondProperties");
+	}
+
+	@Test
+	void scanImportBeanRegistrarShouldApplyTypeExcludeFilter() {
+		this.context.getBeanFactory().registerSingleton("filter", new ConfigurationPropertiesTestTypeExcludeFilter());
+		this.context.register(TestAnotherPackageConfiguration.class);
+		this.context.refresh();
+		assertThat(this.context.getBeanNamesForType(BProperties.class)).containsOnly(
+				"b.first-org.springframework.boot.context.properties.scan.valid.b.BScanConfiguration$BFirstProperties");
+	}
+
+	@Test
+	void scanShouldBindConfigurationProperties() {
+		load(TestAnotherPackageConfiguration.class, "b.first.name=constructor", "b.second.number=42");
+		assertThat(this.context.getBean(BFirstProperties.class).getName()).isEqualTo("constructor");
+		assertThat(this.context.getBean(BSecondProperties.class).getNumber()).isEqualTo(42);
+	}
+
+	private void load(Class<?> configuration, String... inlinedProperties) {
+		this.context.register(configuration);
+		TestPropertySourceUtils.addInlinedPropertiesToEnvironment(this.context, inlinedProperties);
 		this.context.refresh();
 	}
 
 	@ConfigurationPropertiesScan(basePackageClasses = AScanConfiguration.class)
 	static class TestConfiguration {
+
+	}
+
+	@ConfigurationPropertiesScan(basePackages = "org.springframework.boot.context.properties.scan.valid.b")
+	static class TestAnotherPackageConfiguration {
+
+	}
+
+	static class ConfigurationPropertiesTestTypeExcludeFilter extends TypeExcludeFilter {
+
+		@Override
+		public boolean match(MetadataReader metadataReader, MetadataReaderFactory metadataReaderFactory)
+				throws IOException {
+			AssignableTypeFilter typeFilter = new AssignableTypeFilter(BFirstProperties.class);
+			return !typeFilter.match(metadataReader, metadataReaderFactory);
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			return (this == o);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(42);
+		}
 
 	}
 

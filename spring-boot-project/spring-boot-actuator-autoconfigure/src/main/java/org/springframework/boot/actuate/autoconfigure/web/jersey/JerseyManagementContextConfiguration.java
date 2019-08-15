@@ -34,18 +34,16 @@ import org.springframework.context.annotation.Configuration;
 class JerseyManagementContextConfiguration {
 
 	@Bean
-	public ServletRegistrationBean<ServletContainer> jerseyServletRegistration(
-			JerseyApplicationPath jerseyApplicationPath, ResourceConfig resourceConfig) {
+	ServletRegistrationBean<ServletContainer> jerseyServletRegistration(JerseyApplicationPath jerseyApplicationPath,
+			ResourceConfig resourceConfig) {
 		return new ServletRegistrationBean<>(new ServletContainer(resourceConfig),
 				jerseyApplicationPath.getUrlMapping());
 	}
 
 	@Bean
-	public ResourceConfig resourceConfig(
-			ObjectProvider<ResourceConfigCustomizer> resourceConfigCustomizers) {
+	ResourceConfig resourceConfig(ObjectProvider<ResourceConfigCustomizer> resourceConfigCustomizers) {
 		ResourceConfig resourceConfig = new ResourceConfig();
-		resourceConfigCustomizers.orderedStream()
-				.forEach((customizer) -> customizer.customize(resourceConfig));
+		resourceConfigCustomizers.orderedStream().forEach((customizer) -> customizer.customize(resourceConfig));
 		return resourceConfig;
 	}
 
