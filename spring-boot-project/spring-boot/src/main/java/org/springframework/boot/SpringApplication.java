@@ -296,28 +296,39 @@ public class SpringApplication {
 	 * @return a running {@link ApplicationContext}
 	 */
 	public ConfigurableApplicationContext run(String... args) {
+		// 统计启动时间
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
 		ConfigurableApplicationContext context = null;
 		Collection<SpringBootExceptionReporter> exceptionReporters = new ArrayList<>();
 		configureHeadlessProperty();
+		// 从 springFactories 获取 SpringApplicationRunListener 对应的实例
 		SpringApplicationRunListeners listeners = getRunListeners(args);
+		// 发送 ApplicationStartingEvent 事件
 		listeners.starting();
 		try {
 			ApplicationArguments applicationArguments = new DefaultApplicationArguments(args);
+			// 准备环境
 			ConfigurableEnvironment environment = prepareEnvironment(listeners, applicationArguments);
 			configureIgnoreBeanInfo(environment);
+			// 打印启动图
 			Banner printedBanner = printBanner(environment);
+			// 根据环境实例化一个 applicationContext
 			context = createApplicationContext();
+			// 从 springFactories 文件获取 SpringBootExceptionReporter 对应的实例
 			exceptionReporters = getSpringFactoriesInstances(SpringBootExceptionReporter.class,
 					new Class[] { ConfigurableApplicationContext.class }, context);
+			// 这一步注册 BeanDefinition
 			prepareContext(context, environment, listeners, applicationArguments, printedBanner);
+			// 这里是调用 applicationContext.refresh()
 			refreshContext(context);
+			// 暂无实现
 			afterRefresh(context, applicationArguments);
 			stopWatch.stop();
 			if (this.logStartupInfo) {
 				new StartupInfoLogger(this.mainApplicationClass).logStarted(getApplicationLog(), stopWatch);
 			}
+			// 发送 ApplicationStartedEvent 事件
 			listeners.started(context);
 			callRunners(context, applicationArguments);
 		}
@@ -327,6 +338,7 @@ public class SpringApplication {
 		}
 
 		try {
+			// 发送 ApplicationReadyEvent 事件
 			listeners.running(context);
 		}
 		catch (Throwable ex) {
@@ -389,7 +401,9 @@ public class SpringApplication {
 		// Load the sources
 		Set<Object> sources = getAllSources();
 		Assert.notEmpty(sources, "Sources must not be empty");
+		// 注册 多种类型的 BeanDefinition
 		load(context, sources.toArray(new Object[0]));
+		// ApplicationPreparedEvent 事件
 		listeners.contextLoaded(context);
 	}
 

@@ -139,6 +139,7 @@ public class ManagementContextAutoConfiguration {
 				managementContext.setId(this.applicationContext.getId() + ":management");
 				setClassLoaderIfPossible(managementContext);
 				CloseManagementContextListener.addIfPossible(this.applicationContext, managementContext);
+				// 这里初始化子容器
 				managementContext.refresh();
 			}
 		}

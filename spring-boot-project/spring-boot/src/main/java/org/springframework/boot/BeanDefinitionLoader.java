@@ -153,6 +153,7 @@ class BeanDefinitionLoader {
 			GroovyBeanDefinitionSource loader = BeanUtils.instantiateClass(source, GroovyBeanDefinitionSource.class);
 			load(loader);
 		}
+		// load @component 的 bean
 		if (isComponent(source)) {
 			this.annotatedReader.register(source);
 			return 1;
