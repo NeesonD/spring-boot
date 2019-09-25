@@ -272,6 +272,12 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 			return Ordered.HIGHEST_PRECEDENCE;
 		}
 
+		/**
+		 * 这个地方会加载 properties 文件中的属性到 environment， 也就是说这里可以加载远程配置文件
+		 * 通过扩展，自研配置中心
+		 * @param beanFactory
+		 * @throws BeansException
+		 */
 		@Override
 		public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
 			reorderSources(this.context.getEnvironment());
