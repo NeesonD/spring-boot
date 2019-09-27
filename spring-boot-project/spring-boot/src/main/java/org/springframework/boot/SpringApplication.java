@@ -294,6 +294,8 @@ public class SpringApplication {
 	 * {@link ApplicationContext}.
 	 * @param args the application arguments (usually passed from a Java main method)
 	 * @return a running {@link ApplicationContext}
+	 * 通过不同阶段的事件机制，可以很方便的扩展功能，比如说从配置中心拿配置（实现配置与代码的分离）
+	 * 启动成功之后，注册服务，并获取服务
 	 */
 	public ConfigurableApplicationContext run(String... args) {
 		// 统计启动时间
@@ -310,6 +312,7 @@ public class SpringApplication {
 			ApplicationArguments applicationArguments = new DefaultApplicationArguments(args);
 			// 准备环境
 			ConfigurableEnvironment environment = prepareEnvironment(listeners, applicationArguments);
+			// 配置需要忽略调的 beanInfo，暂时没想到有什么应用场景
 			configureIgnoreBeanInfo(environment);
 			// 打印启动图
 			Banner printedBanner = printBanner(environment);
@@ -320,7 +323,7 @@ public class SpringApplication {
 					new Class[] { ConfigurableApplicationContext.class }, context);
 			// 这一步注册 BeanDefinition
 			prepareContext(context, environment, listeners, applicationArguments, printedBanner);
-			// 这里是调用 applicationContext.refresh()
+			// .G. 核心 这里是调用 applicationContext.refresh()
 			refreshContext(context);
 			// 暂无实现
 			afterRefresh(context, applicationArguments);
@@ -351,9 +354,14 @@ public class SpringApplication {
 	private ConfigurableEnvironment prepareEnvironment(SpringApplicationRunListeners listeners,
 			ApplicationArguments applicationArguments) {
 		// Create and configure the environment
+		// 这里判断是 SERVLET、REACTIVE 哪种环境
 		ConfigurableEnvironment environment = getOrCreateEnvironment();
+		// 配置环境，加载 profile 和 propertySource
 		configureEnvironment(environment, applicationArguments.getSourceArgs());
+		// 继续加载 propertySource
 		ConfigurationPropertySources.attach(environment);
+		// 核心，通过事件可以自行扩展
+		// 这里发事件 ApplicationEnvironmentPreparedEvent，这里可以做很多事，比如从远程配置中心加载配置
 		listeners.environmentPrepared(environment);
 		bindToSpringApplication(environment);
 		if (!this.isCustomEnvironment) {
@@ -434,6 +442,15 @@ public class SpringApplication {
 		return getSpringFactoriesInstances(type, new Class<?>[] {});
 	}
 
+	/**
+	 * 通过泛型设计，可以获取多种实例
+	 * 获取 SpringFactories 文件中的实例
+	 * @param type
+	 * @param parameterTypes
+	 * @param args
+	 * @param <T>
+	 * @return
+	 */
 	private <T> Collection<T> getSpringFactoriesInstances(Class<T> type, Class<?>[] parameterTypes, Object... args) {
 		ClassLoader classLoader = getClassLoader();
 		// Use names and ensure unique to protect against duplicates
@@ -490,8 +507,10 @@ public class SpringApplication {
 	protected void configureEnvironment(ConfigurableEnvironment environment, String[] args) {
 		if (this.addConversionService) {
 			ConversionService conversionService = ApplicationConversionService.getSharedInstance();
+			// 类型转换
 			environment.setConversionService((ConfigurableConversionService) conversionService);
 		}
+		// 这里并没有获取 application.properties
 		configurePropertySources(environment, args);
 		configureProfiles(environment, args);
 	}
@@ -502,12 +521,14 @@ public class SpringApplication {
 	 * @param environment this application's environment
 	 * @param args arguments passed to the {@code run} method
 	 * @see #configureEnvironment(ConfigurableEnvironment, String[])
+	 * 这里可以看出来 propertySource 的顺序，也就是环境属性加载的顺序
 	 */
 	protected void configurePropertySources(ConfigurableEnvironment environment, String[] args) {
 		MutablePropertySources sources = environment.getPropertySources();
 		if (this.defaultProperties != null && !this.defaultProperties.isEmpty()) {
 			sources.addLast(new MapPropertySource("defaultProperties", this.defaultProperties));
 		}
+		// 将命令行中得配置放在第一位
 		if (this.addCommandLineProperties && args.length > 0) {
 			String name = CommandLinePropertySource.COMMAND_LINE_PROPERTY_SOURCE_NAME;
 			if (sources.contains(name)) {
