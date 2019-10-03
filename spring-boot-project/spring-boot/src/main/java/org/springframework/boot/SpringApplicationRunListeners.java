@@ -30,6 +30,7 @@ import org.springframework.util.ReflectionUtils;
  * A collection of {@link SpringApplicationRunListener}.
  *
  * @author Phillip Webb
+ * 应用启动生命周期变动事件发送
  */
 class SpringApplicationRunListeners {
 

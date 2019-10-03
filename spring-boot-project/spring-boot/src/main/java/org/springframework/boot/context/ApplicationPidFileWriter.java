@@ -134,6 +134,7 @@ public class ApplicationPidFileWriter implements ApplicationListener<SpringAppli
 
 	@Override
 	public void onApplicationEvent(SpringApplicationEvent event) {
+		// 只能设置一次，这种写法可以用来实现单例 created.compareAndSet(false, true)
 		if (this.triggerEventType.isInstance(event) && created.compareAndSet(false, true)) {
 			try {
 				writePidFile(event);

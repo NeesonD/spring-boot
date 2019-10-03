@@ -32,6 +32,7 @@ import org.springframework.core.io.support.SpringFactoriesLoader;
  * @author Dave Syer
  * @author Andy Wilkinson
  * @since 1.0.0
+ * 扩展容器生命周期中的行为，有一个默认的实现，主要是发送对应的事件
  */
 public interface SpringApplicationRunListener {
 
@@ -46,6 +47,7 @@ public interface SpringApplicationRunListener {
 	 * Called once the environment has been prepared, but before the
 	 * {@link ApplicationContext} has been created.
 	 * @param environment the environment
+	 *                   加载各种环境值，servletContext，application.properties
 	 */
 	default void environmentPrepared(ConfigurableEnvironment environment) {
 	}

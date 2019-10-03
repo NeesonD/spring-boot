@@ -105,6 +105,7 @@ public class LogbackLoggingSystem extends Slf4JLoggingSystem {
 		if (isAlreadyInitialized(loggerContext)) {
 			return;
 		}
+		// 安装 SLF4JBridgeHandler
 		super.beforeInitialize();
 		loggerContext.getTurboFilterList().add(FILTER);
 	}

@@ -44,7 +44,9 @@ import org.springframework.validation.annotation.Validated;
  * @author Stephane Nicoll
  * @author Madhura Bhave
  * @since 1.0.0
- */
+ * .G. 将 PropertySources 中的属性绑定到 ConfigurationProperties 中，和 $ 处理不一样
+ *
+ * */
 public class ConfigurationPropertiesBindingPostProcessor
 		implements BeanPostProcessor, PriorityOrdered, ApplicationContextAware, InitializingBean {
 

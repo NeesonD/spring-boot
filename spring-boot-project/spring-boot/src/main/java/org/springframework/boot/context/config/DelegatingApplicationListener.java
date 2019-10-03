@@ -51,6 +51,10 @@ public class DelegatingApplicationListener implements ApplicationListener<Applic
 
 	private SimpleApplicationEventMulticaster multicaster;
 
+	/**
+	 * 通过命令参数来启动 ApplicationListener，不常用
+	 * @param event
+	 */
 	@Override
 	public void onApplicationEvent(ApplicationEvent event) {
 		if (event instanceof ApplicationEnvironmentPreparedEvent) {

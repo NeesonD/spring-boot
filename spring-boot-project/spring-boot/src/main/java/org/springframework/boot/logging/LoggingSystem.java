@@ -155,6 +155,7 @@ public abstract class LoggingSystem {
 			}
 			return get(classLoader, loggingSystem);
 		}
+		// 默认是 LogbackLoggingSystem
 		return SYSTEMS.entrySet().stream().filter((entry) -> ClassUtils.isPresent(entry.getKey(), classLoader))
 				.map((entry) -> get(classLoader, entry.getValue())).findFirst()
 				.orElseThrow(() -> new IllegalStateException("No suitable logging system located"));

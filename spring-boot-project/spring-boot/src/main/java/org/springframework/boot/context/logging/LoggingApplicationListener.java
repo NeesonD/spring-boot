@@ -216,19 +216,24 @@ public class LoggingApplicationListener implements GenericApplicationListener {
 	@Override
 	public void onApplicationEvent(ApplicationEvent event) {
 		if (event instanceof ApplicationStartingEvent) {
+			// 日志系统初始化前置处理
 			onApplicationStartingEvent((ApplicationStartingEvent) event);
 		}
 		else if (event instanceof ApplicationEnvironmentPreparedEvent) {
+			// 初始化日志系统
 			onApplicationEnvironmentPreparedEvent((ApplicationEnvironmentPreparedEvent) event);
 		}
 		else if (event instanceof ApplicationPreparedEvent) {
+			// 注册日志系统相关 bean
 			onApplicationPreparedEvent((ApplicationPreparedEvent) event);
 		}
 		else if (event instanceof ContextClosedEvent
 				&& ((ContextClosedEvent) event).getApplicationContext().getParent() == null) {
+			// 清理日志系统
 			onContextClosedEvent();
 		}
 		else if (event instanceof ApplicationFailedEvent) {
+			// 清理日志系统
 			onApplicationFailedEvent();
 		}
 	}
@@ -242,9 +247,14 @@ public class LoggingApplicationListener implements GenericApplicationListener {
 		if (this.loggingSystem == null) {
 			this.loggingSystem = LoggingSystem.get(event.getSpringApplication().getClassLoader());
 		}
+		// 处理 application.properties 中 log 的参数
 		initialize(event.getEnvironment(), event.getSpringApplication().getClassLoader());
 	}
 
+	/**
+	 * 将日志相关对象注册成单例
+	 * @param event
+	 */
 	private void onApplicationPreparedEvent(ApplicationPreparedEvent event) {
 		ConfigurableListableBeanFactory beanFactory = event.getApplicationContext().getBeanFactory();
 		if (!beanFactory.containsBean(LOGGING_SYSTEM_BEAN_NAME)) {

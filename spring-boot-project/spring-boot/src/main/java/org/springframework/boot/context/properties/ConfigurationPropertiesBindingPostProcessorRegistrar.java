@@ -58,6 +58,7 @@ public class ConfigurationPropertiesBindingPostProcessorRegistrar implements Imp
 
 	private void registerConfigurationPropertiesBindingPostProcessor(BeanDefinitionRegistry registry) {
 		GenericBeanDefinition definition = new GenericBeanDefinition();
+		// 委托 ConfigurationPropertiesBinder 绑定 propertySource 到相关属性上
 		definition.setBeanClass(ConfigurationPropertiesBindingPostProcessor.class);
 		definition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
 		registry.registerBeanDefinition(ConfigurationPropertiesBindingPostProcessor.BEAN_NAME, definition);

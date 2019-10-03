@@ -16,23 +16,8 @@
 
 package org.springframework.boot;
 
-import java.lang.reflect.Constructor;
-import java.security.AccessControlException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.CachedIntrospectionResults;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -62,26 +47,16 @@ import org.springframework.core.GenericTypeResolver;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.ConfigurableConversionService;
-import org.springframework.core.env.CommandLinePropertySource;
-import org.springframework.core.env.CompositePropertySource;
-import org.springframework.core.env.ConfigurableEnvironment;
-import org.springframework.core.env.Environment;
-import org.springframework.core.env.MapPropertySource;
-import org.springframework.core.env.MutablePropertySources;
-import org.springframework.core.env.PropertySource;
-import org.springframework.core.env.SimpleCommandLinePropertySource;
-import org.springframework.core.env.StandardEnvironment;
+import org.springframework.core.env.*;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.SpringFactoriesLoader;
-import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.ReflectionUtils;
-import org.springframework.util.StopWatch;
-import org.springframework.util.StringUtils;
+import org.springframework.util.*;
 import org.springframework.web.context.support.StandardServletEnvironment;
+
+import java.lang.reflect.Constructor;
+import java.security.AccessControlException;
+import java.util.*;
 
 /**
  * Class that can be used to bootstrap and launch a Spring application from a Java main
@@ -296,6 +271,15 @@ public class SpringApplication {
 	 * @return a running {@link ApplicationContext}
 	 * 通过不同阶段的事件机制，可以很方便的扩展功能，比如说从配置中心拿配置（实现配置与代码的分离）
 	 * 启动成功之后，注册服务，并获取服务
+	 *
+	 * 核心：
+	 * 1. 生命周期 SpringApplicationRunListeners
+	 * 	  * 状态 -> 事件 -> 自定义处理器
+	 * 	  * 搞清楚每个状态对应哪些默认事件处理功能
+	 * 	  * 思考监听这些状态，我们可以自定义哪些功能
+	 * 	  	* environmentPrepared 从配置中心获取外部配置
+	 * 	    * running 之后获取注册中心服务，并将自己注册到服务中心
+	 * 	    * fail 启动失败的告警
 	 */
 	public ConfigurableApplicationContext run(String... args) {
 		// 统计启动时间
@@ -310,22 +294,25 @@ public class SpringApplication {
 		listeners.starting();
 		try {
 			ApplicationArguments applicationArguments = new DefaultApplicationArguments(args);
-			// 准备环境
+			// 准备环境 , BootstrapApplicationListener 会启动 bootstrap 上下文
+			//============================ 核心1：准备各种属性 ==============================
 			ConfigurableEnvironment environment = prepareEnvironment(listeners, applicationArguments);
 			// 配置需要忽略调的 beanInfo，暂时没想到有什么应用场景
 			configureIgnoreBeanInfo(environment);
 			// 打印启动图
 			Banner printedBanner = printBanner(environment);
-			// 根据环境实例化一个 applicationContext
+			// 根据环境实例化一个 applicationContext，推断出使用哪种 ApplicationContext，一般是 AnnotationConfigServletWebServerApplicationContext
 			context = createApplicationContext();
 			// 从 springFactories 文件获取 SpringBootExceptionReporter 对应的实例
 			exceptionReporters = getSpringFactoriesInstances(SpringBootExceptionReporter.class,
 					new Class[] { ConfigurableApplicationContext.class }, context);
-			// 这一步注册 BeanDefinition
+			// 这一步注册 BeanDefinition，refresh 的前置
+			//============================ 核心2：注册一部分 bean，一般是将主类注册成 bean，不过也可以传入 xml  ==============================
 			prepareContext(context, environment, listeners, applicationArguments, printedBanner);
 			// .G. 核心 这里是调用 applicationContext.refresh()
+			//============================ 核心3：调用 spring 的 refresh()，注册 bean，实例化 bean  ==============================
 			refreshContext(context);
-			// 暂无实现
+			// 暂无实现，refresh 的后置
 			afterRefresh(context, applicationArguments);
 			stopWatch.stop();
 			if (this.logStartupInfo) {
@@ -336,6 +323,7 @@ public class SpringApplication {
 			callRunners(context, applicationArguments);
 		}
 		catch (Throwable ex) {
+			// 这里可以捕获到启动异常，可以自定义 Reporters 来告警
 			handleRunFailure(context, ex, exceptionReporters, listeners);
 			throw new IllegalStateException(ex);
 		}
@@ -386,8 +374,11 @@ public class SpringApplication {
 	private void prepareContext(ConfigurableApplicationContext context, ConfigurableEnvironment environment,
 			SpringApplicationRunListeners listeners, ApplicationArguments applicationArguments, Banner printedBanner) {
 		context.setEnvironment(environment);
+		// 自定义 beanNameGenerator，resourceLoader
 		postProcessApplicationContext(context);
+		// 执行 ApplicationContextInitializer initialize，思考有哪些东西是要在这个阶段初始化的
 		applyInitializers(context);
+		// contextPrepared 阶段
 		listeners.contextPrepared(context);
 		if (this.logStartupInfo) {
 			logStartupInfo(context.getParent() == null);
@@ -403,13 +394,14 @@ public class SpringApplication {
 			((DefaultListableBeanFactory) beanFactory)
 					.setAllowBeanDefinitionOverriding(this.allowBeanDefinitionOverriding);
 		}
+		// 设置延迟加载的属性
 		if (this.lazyInitialization) {
 			context.addBeanFactoryPostProcessor(new LazyInitializationBeanFactoryPostProcessor());
 		}
 		// Load the sources
 		Set<Object> sources = getAllSources();
 		Assert.notEmpty(sources, "Sources must not be empty");
-		// 注册 多种类型的 BeanDefinition
+		// 注册 多种类型的 BeanDefinition，xml、
 		load(context, sources.toArray(new Object[0]));
 		// ApplicationPreparedEvent 事件
 		listeners.contextLoaded(context);
@@ -827,12 +819,14 @@ public class SpringApplication {
 			Collection<SpringBootExceptionReporter> exceptionReporters, SpringApplicationRunListeners listeners) {
 		try {
 			try {
+				// 处理异常
 				handleExitCode(context, exception);
 				if (listeners != null) {
 					listeners.failed(context, exception);
 				}
 			}
 			finally {
+				// 告警处理
 				reportFailure(exceptionReporters, exception);
 				if (context != null) {
 					context.close();

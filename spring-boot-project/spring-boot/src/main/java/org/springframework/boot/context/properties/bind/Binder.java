@@ -49,6 +49,7 @@ import org.springframework.util.Assert;
  * @author Phillip Webb
  * @author Madhura Bhave
  * @since 2.0.0
+ * .G.
  */
 public class Binder {
 

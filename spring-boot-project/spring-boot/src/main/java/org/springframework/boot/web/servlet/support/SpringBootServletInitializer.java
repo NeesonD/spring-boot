@@ -182,6 +182,10 @@ public abstract class SpringBootServletInitializer implements WebApplicationInit
 			this.servletContext = servletContext;
 		}
 
+		/**
+		 * 初始化 servletContext、servletConfig 的属性
+		 * @param event
+		 */
 		@Override
 		public void onApplicationEvent(ApplicationEnvironmentPreparedEvent event) {
 			ConfigurableEnvironment environment = event.getEnvironment();

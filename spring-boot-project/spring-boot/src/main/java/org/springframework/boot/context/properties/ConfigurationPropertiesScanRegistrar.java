@@ -43,6 +43,8 @@ import org.springframework.util.StringUtils;
  * {@link ConfigurationProperties @ConfigurationProperties} bean definitions via scanning.
  *
  * @author Madhura Bhave
+ * ConfigurationProperties 实现的改动较 1.5 版本较大
+ * 这个主要是通过扫包，注册 ConfigurationProperties 相关类的 BeanDefinition
  */
 class ConfigurationPropertiesScanRegistrar
 		implements ImportBeanDefinitionRegistrar, EnvironmentAware, ResourceLoaderAware {
