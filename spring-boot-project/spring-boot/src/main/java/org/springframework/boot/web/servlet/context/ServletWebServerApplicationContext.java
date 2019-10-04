@@ -162,7 +162,7 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 		super.finishRefresh();
 		WebServer webServer = startWebServer();
 		if (webServer != null) {
-			// 这里抛了一个 ServletWebServerInitializedEvent 事件，用于初始化子容器
+			// 这里抛了一个 ServletWebServerInitializedEvent 事件，用于初始化子容器，也就是初始化玩 spring 容器之后，开始初始化 springmvc 容器
 			publishEvent(new ServletWebServerInitializedEvent(webServer, this));
 		}
 	}

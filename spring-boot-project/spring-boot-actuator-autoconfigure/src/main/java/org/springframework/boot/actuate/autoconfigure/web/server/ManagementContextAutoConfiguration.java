@@ -128,6 +128,7 @@ public class ManagementContextAutoConfiguration {
 		@Override
 		public void onApplicationEvent(WebServerInitializedEvent event) {
 			if (event.getApplicationContext().equals(this.applicationContext)) {
+				// 创建 springmvc 容器上下文
 				ConfigurableWebServerApplicationContext managementContext = this.managementContextFactory
 						.createManagementContext(this.applicationContext,
 								EnableChildManagementContextConfiguration.class,
@@ -138,6 +139,7 @@ public class ManagementContextAutoConfiguration {
 				managementContext.setServerNamespace("management");
 				managementContext.setId(this.applicationContext.getId() + ":management");
 				setClassLoaderIfPossible(managementContext);
+				// 添加容器关闭或启动异常的监听器
 				CloseManagementContextListener.addIfPossible(this.applicationContext, managementContext);
 				// 这里初始化子容器
 				managementContext.refresh();
