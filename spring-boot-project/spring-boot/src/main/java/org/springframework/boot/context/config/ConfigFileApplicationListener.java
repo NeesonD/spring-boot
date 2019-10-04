@@ -346,6 +346,7 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 						this.processedProfiles = new LinkedList<>();
 						this.activatedProfiles = false;
 						this.loaded = new LinkedHashMap<>();
+						// 初始化 profile，至少包含两个，null（application.properties） 和 某个环境（application-sat.properties）
 						initializeProfiles();
 						while (!this.profiles.isEmpty()) {
 							Profile profile = this.profiles.poll();
@@ -370,7 +371,9 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 		private void initializeProfiles() {
 			// The default profile for these purposes is represented as null. We add it
 			// first so that it is processed first and has lowest priority.
+			// 先进先出
 			this.profiles.add(null);
+			// 将配置文件中的 ACTIVE_PROFILES_PROPERTY 绑定到 Profile 上面
 			Set<Profile> activatedViaProperty = getProfilesFromProperty(ACTIVE_PROFILES_PROPERTY);
 			Set<Profile> includedViaProperty = getProfilesFromProperty(INCLUDE_PROFILES_PROPERTY);
 			List<Profile> otherActiveProfiles = getOtherActiveProfiles(activatedViaProperty, includedViaProperty);
@@ -391,6 +394,7 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 			if (!this.environment.containsProperty(profilesProperty)) {
 				return Collections.emptySet();
 			}
+			// 将属性值与对象中的值绑定起来，这里的实现与 1.5 版本的不一样，老版本使用的 dataBind
 			Binder binder = Binder.get(this.environment);
 			Set<Profile> profiles = getProfiles(binder, profilesProperty);
 			return new LinkedHashSet<>(profiles);
@@ -457,6 +461,7 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 		}
 
 		private void load(Profile profile, DocumentFilterFactory filterFactory, DocumentConsumer consumer) {
+			// 获取 application.properties
 			getSearchLocations().forEach((location) -> {
 				boolean isFolder = location.endsWith("/");
 				Set<String> names = isFolder ? getSearchNames() : NO_SEARCH_NAMES;

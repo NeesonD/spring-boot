@@ -295,7 +295,7 @@ public class SpringApplication {
 		try {
 			ApplicationArguments applicationArguments = new DefaultApplicationArguments(args);
 			// 准备环境 , BootstrapApplicationListener 会启动 bootstrap 上下文
-			//============================ 核心1：准备各种属性 ==============================
+			//============================ 核心1：准备各种属性 ConfigFileApplicationListener ==============================
 			ConfigurableEnvironment environment = prepareEnvironment(listeners, applicationArguments);
 			// 配置需要忽略调的 beanInfo，暂时没想到有什么应用场景
 			configureIgnoreBeanInfo(environment);
@@ -309,7 +309,7 @@ public class SpringApplication {
 			// 这一步注册 BeanDefinition，refresh 的前置
 			//============================ 核心2：注册一部分 bean，一般是将主类注册成 bean，不过也可以传入 xml  ==============================
 			prepareContext(context, environment, listeners, applicationArguments, printedBanner);
-			// .G. 核心 这里是调用 applicationContext.refresh()
+			// 重中之重 .G. 核心 这里是调用 applicationContext.refresh()
 			//============================ 核心3：调用 spring 的 refresh()，注册 bean，实例化 bean  ==============================
 			refreshContext(context);
 			// 暂无实现，refresh 的后置
@@ -350,6 +350,7 @@ public class SpringApplication {
 		ConfigurationPropertySources.attach(environment);
 		// 核心，通过事件可以自行扩展
 		// 这里发事件 ApplicationEnvironmentPreparedEvent，这里可以做很多事，比如从远程配置中心加载配置
+		// 主要看一下 ConfigFileApplicationListener 解析并获取配置文件中的 profile，以及相关属性
 		listeners.environmentPrepared(environment);
 		bindToSpringApplication(environment);
 		if (!this.isCustomEnvironment) {

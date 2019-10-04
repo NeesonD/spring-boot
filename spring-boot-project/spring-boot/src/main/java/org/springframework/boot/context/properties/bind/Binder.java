@@ -58,14 +58,15 @@ public class Binder {
 
 	private static final DataObjectBinder[] DATA_OBJECT_BINDERS = { new ValueObjectBinder(), new JavaBeanBinder() };
 
+	// 获取所有 key-value
 	private final Iterable<ConfigurationPropertySource> sources;
-
+	// 占位符解析
 	private final PlaceholdersResolver placeholdersResolver;
 
 	private final ConversionService conversionService;
-
+	// 类型解析并将 value 赋值给对应对象
 	private final Consumer<PropertyEditorRegistry> propertyEditorInitializer;
-
+	// 绑定生命周期
 	private final BindHandler defaultBindHandler;
 
 	/**
@@ -209,6 +210,7 @@ public class Binder {
 	 * @return the binding result (never {@code null})
 	 */
 	public <T> BindResult<T> bind(ConfigurationPropertyName name, Bindable<T> target, BindHandler handler) {
+		// T 是真正想要的值，BindResult 相当于 BasicResponse，用来包装 T 的
 		T bound = bind(name, target, handler, false);
 		return BindResult.of(bound);
 	}
@@ -346,10 +348,12 @@ public class Binder {
 		}
 		AggregateBinder<?> aggregateBinder = getAggregateBinder(target, context);
 		if (aggregateBinder != null) {
+			// map，collection，list会直接走这里，这里不会处理占位符
 			return bindAggregate(name, target, handler, context, aggregateBinder);
 		}
 		if (property != null) {
 			try {
+				// 这里才会处理占位符
 				return bindProperty(target, context, property);
 			}
 			catch (ConverterNotFoundException ex) {
@@ -475,7 +479,9 @@ public class Binder {
 	 * @since 2.2.0
 	 */
 	public static Binder get(Environment environment, BindHandler defaultBindHandler) {
+		// 获取 PropertySource 中的 source 列表
 		Iterable<ConfigurationPropertySource> sources = ConfigurationPropertySources.get(environment);
+		// PropertySources 占位符处理器
 		PropertySourcesPlaceholdersResolver placeholdersResolver = new PropertySourcesPlaceholdersResolver(environment);
 		return new Binder(sources, placeholdersResolver, null, null, defaultBindHandler);
 	}

@@ -89,6 +89,13 @@ public class ConfigurationPropertiesBindingPostProcessor
 		return Ordered.HIGHEST_PRECEDENCE + 1;
 	}
 
+	/**
+	 * 处理 @ConfigurationProperties 的类
+	 * @param bean
+	 * @param beanName
+	 * @return
+	 * @throws BeansException
+	 */
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 		ConfigurationProperties annotation = getAnnotation(bean, beanName, ConfigurationProperties.class);

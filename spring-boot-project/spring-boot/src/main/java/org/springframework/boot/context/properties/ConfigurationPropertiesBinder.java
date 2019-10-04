@@ -61,15 +61,16 @@ class ConfigurationPropertiesBinder implements ApplicationContextAware {
 	private final String validatorBeanName;
 
 	private ApplicationContext applicationContext;
-
+	// key-value
 	private PropertySources propertySources;
-
+	// 验证器
 	private Validator configurationPropertiesValidator;
 
 	private boolean jsr303Present;
 
 	private volatile Validator jsr303Validator;
 
+	// 委托
 	private volatile Binder binder;
 
 	ConfigurationPropertiesBinder(String validatorBeanName) {
@@ -87,7 +88,9 @@ class ConfigurationPropertiesBinder implements ApplicationContextAware {
 
 	<T> BindResult<T> bind(Bindable<T> target) {
 		ConfigurationProperties annotation = getAnnotation(target);
+		// 可以自定义 BindHandler
 		BindHandler bindHandler = getBindHandler(target, annotation);
+		// 真正绑定还是委托给 Binder 处理，这里只是通过配置可以指定自己的 BindHandler
 		return getBinder().bind(annotation.prefix(), target, bindHandler);
 	}
 

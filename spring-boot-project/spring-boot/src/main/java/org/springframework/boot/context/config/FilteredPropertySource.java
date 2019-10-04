@@ -28,6 +28,7 @@ import org.springframework.core.env.PropertySource;
  * {@link ConfigFileApplicationListener} to filter out properties for specific operations.
  *
  * @author Phillip Webb
+ * 过滤一部分属性
  */
 class FilteredPropertySource extends PropertySource<PropertySource<?>> {
 
