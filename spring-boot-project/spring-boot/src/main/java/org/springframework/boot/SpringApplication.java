@@ -132,6 +132,7 @@ import java.util.*;
  * @see #run(Class, String[])
  * @see #run(Class[], String[])
  * @see #SpringApplication(Class...)
+ * 有 属性赋值 的地方，就要思考一下是不是可以自定义一些实现满足项目中的开发
  */
 public class SpringApplication {
 
@@ -170,10 +171,16 @@ public class SpringApplication {
 
 	private static final Log logger = LogFactory.getLog(SpringApplication.class);
 
+	/**
+	 * 一般是主类
+	 */
 	private Set<Class<?>> primarySources;
 
 	private Set<String> sources = new LinkedHashSet<>();
 
+	/**
+	 * 主类
+	 */
 	private Class<?> mainApplicationClass;
 
 	private Banner.Mode bannerMode = Banner.Mode.CONSOLE;
@@ -186,22 +193,46 @@ public class SpringApplication {
 
 	private Banner banner;
 
+	/**
+	 * 加载 resource
+	 */
 	private ResourceLoader resourceLoader;
 
+	/**
+	 * bean name 生成器，像业务中定义 bean 的 name 通常是类名，然后首字母小写
+	 * 如果你的业务中有大量相同类名的 bean，可以自定义 BeanNameGenerator，让 beanName 是全类名
+	 */
 	private BeanNameGenerator beanNameGenerator;
 
+	/**
+	 * 获取 key-value，以及 profile
+	 */
 	private ConfigurableEnvironment environment;
 
+	/**
+	 * 容器
+	 */
 	private Class<? extends ConfigurableApplicationContext> applicationContextClass;
 
+	/**
+	 * 应用类型
+	 */
 	private WebApplicationType webApplicationType;
 
 	private boolean headless = true;
 
 	private boolean registerShutdownHook = true;
 
+	/**
+	 * 从 spring.factories 获取 ApplicationContextInitializer
+	 * 支持扩展
+	 */
 	private List<ApplicationContextInitializer<?>> initializers;
 
+	/**
+	 * 从 spring.factories 获取 ApplicationListener
+	 * 支持扩展
+	 */
 	private List<ApplicationListener<?>> listeners;
 
 	private Map<String, Object> defaultProperties;
@@ -237,23 +268,33 @@ public class SpringApplication {
 	 * @param primarySources the primary bean sources
 	 * @see #run(Class, String[])
 	 * @see #setSources(Set)
+	 * 这里对开发重要的点在于 spring.factories 的扩展性
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public SpringApplication(ResourceLoader resourceLoader, Class<?>... primarySources) {
+		// null
 		this.resourceLoader = resourceLoader;
 		Assert.notNull(primarySources, "PrimarySources must not be null");
 		this.primarySources = new LinkedHashSet<>(Arrays.asList(primarySources));
+		// 推断是什么环境，用于后面初始化那种 applicationContext
 		this.webApplicationType = WebApplicationType.deduceFromClasspath();
+		// 从 spring.factories 文件中获取 ApplicationContextInitializer
+		// 问题来了，如果我想自定义一个 ApplicationContextInitializer，是不是可以自建 spring.factories，然后将自定义的 ApplicationContextInitializer 加进去
 		setInitializers((Collection) getSpringFactoriesInstances(ApplicationContextInitializer.class));
+		// 同上，也可以扩展
 		setListeners((Collection) getSpringFactoriesInstances(ApplicationListener.class));
+		// 找到主类
 		this.mainApplicationClass = deduceMainApplicationClass();
 	}
 
 	private Class<?> deduceMainApplicationClass() {
 		try {
+			// 获取当前调用栈
 			StackTraceElement[] stackTrace = new RuntimeException().getStackTrace();
 			for (StackTraceElement stackTraceElement : stackTrace) {
+				// 找到 main 方法的调用栈，就可以找到主类了
 				if ("main".equals(stackTraceElement.getMethodName())) {
+					// 加载类
 					return Class.forName(stackTraceElement.getClassName());
 				}
 			}
@@ -283,16 +324,20 @@ public class SpringApplication {
 	 */
 	public ConfigurableApplicationContext run(String... args) {
 		// 统计启动时间
-		StopWatch stopWatch = new StopWatch();
-		stopWatch.start();
+//		StopWatch stopWatch = new StopWatch();
+//		stopWatch.start();
 		ConfigurableApplicationContext context = null;
 		Collection<SpringBootExceptionReporter> exceptionReporters = new ArrayList<>();
 		configureHeadlessProperty();
-		// 从 springFactories 获取 SpringApplicationRunListener 对应的实例
+		// 从 spring.factories 获取 SpringApplicationRunListener 对应的实例 (暂时只有 EventPublishingRunListener)
+		// 也就是说 我们可以自定义一个 SpringApplicationRunListener 进行扩展
+		// 这里也能够体现，使用接口而不是实现
+		// 还记不记得在 new SpringApplication 的时候，也去 spring.factories 中获取相应类了
 		SpringApplicationRunListeners listeners = getRunListeners(args);
 		// 发送 ApplicationStartingEvent 事件
 		listeners.starting();
 		try {
+			// 封装一下命令行参数
 			ApplicationArguments applicationArguments = new DefaultApplicationArguments(args);
 			// 准备环境 , BootstrapApplicationListener 会启动 bootstrap 上下文
 			//============================ 核心1：准备各种属性 ConfigFileApplicationListener ==============================
@@ -303,7 +348,8 @@ public class SpringApplication {
 			Banner printedBanner = printBanner(environment);
 			// 根据环境实例化一个 applicationContext，推断出使用哪种 ApplicationContext，一般是 AnnotationConfigServletWebServerApplicationContext
 			context = createApplicationContext();
-			// 从 springFactories 文件获取 SpringBootExceptionReporter 对应的实例
+			// 从 spring.factories 文件获取 SpringBootExceptionReporter 对应的实例
+			// 也可以扩展
 			exceptionReporters = getSpringFactoriesInstances(SpringBootExceptionReporter.class,
 					new Class[] { ConfigurableApplicationContext.class }, context);
 			// 这一步注册 BeanDefinition，refresh 的前置
@@ -314,12 +360,13 @@ public class SpringApplication {
 			refreshContext(context);
 			// 暂无实现，refresh 的后置
 			afterRefresh(context, applicationArguments);
-			stopWatch.stop();
-			if (this.logStartupInfo) {
-				new StartupInfoLogger(this.mainApplicationClass).logStarted(getApplicationLog(), stopWatch);
-			}
+//			stopWatch.stop();
+//			if (this.logStartupInfo) {
+//				new StartupInfoLogger(this.mainApplicationClass).logStarted(getApplicationLog(), stopWatch);
+//			}
 			// 发送 ApplicationStartedEvent 事件
 			listeners.started(context);
+			// TODO
 			callRunners(context, applicationArguments);
 		}
 		catch (Throwable ex) {
@@ -352,6 +399,7 @@ public class SpringApplication {
 		// 这里发事件 ApplicationEnvironmentPreparedEvent，这里可以做很多事，比如从远程配置中心加载配置
 		// 主要看一下 ConfigFileApplicationListener 解析并获取配置文件中的 profile，以及相关属性
 		listeners.environmentPrepared(environment);
+		// 属性绑定
 		bindToSpringApplication(environment);
 		if (!this.isCustomEnvironment) {
 			environment = new EnvironmentConverter(getClassLoader()).convertEnvironmentIfNecessary(environment,
@@ -375,34 +423,40 @@ public class SpringApplication {
 	private void prepareContext(ConfigurableApplicationContext context, ConfigurableEnvironment environment,
 			SpringApplicationRunListeners listeners, ApplicationArguments applicationArguments, Banner printedBanner) {
 		context.setEnvironment(environment);
-		// 自定义 beanNameGenerator，resourceLoader
+		// 注册 beanNameGenerator，resourceLoader
 		postProcessApplicationContext(context);
 		// 执行 ApplicationContextInitializer initialize，思考有哪些东西是要在这个阶段初始化的
+		// 还记不记得 new SpringApplication 的时候，从 spring.factories 中获取到了 ApplicationContextInitializer
 		applyInitializers(context);
 		// contextPrepared 阶段
 		listeners.contextPrepared(context);
-		if (this.logStartupInfo) {
-			logStartupInfo(context.getParent() == null);
-			logStartupProfileInfo(context);
-		}
+//		if (this.logStartupInfo) {
+//			logStartupInfo(context.getParent() == null);
+//			logStartupProfileInfo(context);
+//		}
 		// Add boot specific singleton beans
 		ConfigurableListableBeanFactory beanFactory = context.getBeanFactory();
+		// 将参数的包装对象注册成 bean
 		beanFactory.registerSingleton("springApplicationArguments", applicationArguments);
 		if (printedBanner != null) {
+			// 将打印 banner 也注册成 bean
 			beanFactory.registerSingleton("springBootBanner", printedBanner);
 		}
+		// 设置是否允许bean覆盖，一般是 false
 		if (beanFactory instanceof DefaultListableBeanFactory) {
 			((DefaultListableBeanFactory) beanFactory)
 					.setAllowBeanDefinitionOverriding(this.allowBeanDefinitionOverriding);
 		}
-		// 设置延迟加载的属性
+		// 设置延迟加载的属性，一般是 false
+		// BeanFactoryPostProcessor 这个非常重要，放在后面讲
 		if (this.lazyInitialization) {
 			context.addBeanFactoryPostProcessor(new LazyInitializationBeanFactoryPostProcessor());
 		}
 		// Load the sources
+		// 一般就是主类
 		Set<Object> sources = getAllSources();
 		Assert.notEmpty(sources, "Sources must not be empty");
-		// 注册 多种类型的 BeanDefinition，xml、
+		// 注册 多种类型的 BeanDefinition，一般就是将主类注册成 beanDefinition
 		load(context, sources.toArray(new Object[0]));
 		// ApplicationPreparedEvent 事件
 		listeners.contextLoaded(context);
@@ -608,6 +662,7 @@ public class SpringApplication {
 					contextClass = Class.forName(DEFAULT_CONTEXT_CLASS);
 				}
 			}
+			// 这个异常是不是很熟悉，面试题老是问 ClassNotFoundException 和 NoClassDefFoundError 的区别
 			catch (ClassNotFoundException ex) {
 				throw new IllegalStateException(
 						"Unable create a default ApplicationContext, please specify an ApplicationContextClass", ex);
@@ -1229,6 +1284,7 @@ public class SpringApplication {
 	 * applied to the SpringApplication and registered with the {@link ApplicationContext}
 	 * .
 	 * @return the listeners
+	 * 获取的不是 listeners 引用，所以说获取之后进行 set 是无效的
 	 */
 	public Set<ApplicationListener<?>> getListeners() {
 		return asUnmodifiableOrderedSet(this.listeners);
@@ -1240,6 +1296,7 @@ public class SpringApplication {
 	 * @param primarySource the primary source to load
 	 * @param args the application arguments (usually passed from a Java main method)
 	 * @return the running {@link ApplicationContext}
+	 * primarySource 一般是主类，args 则是命令参数
 	 */
 	public static ConfigurableApplicationContext run(Class<?> primarySource, String... args) {
 		return run(new Class<?>[] { primarySource }, args);
@@ -1253,6 +1310,9 @@ public class SpringApplication {
 	 * @return the running {@link ApplicationContext}
 	 */
 	public static ConfigurableApplicationContext run(Class<?>[] primarySources, String[] args) {
+		// 关注一下类的实例化方法，以及看一下初始化了哪些属性
+		// 因为这里初始化完成之后就立马调了 run，这说明通过该方法，我们不能够给 SpringApplication 更多的属性进行初始化
+		// 所以想要更全的功能，我们可以 new SpringApplication 之后，再 set 属性，然后调 run 方法，这样就可以充分扩展功能了
 		return new SpringApplication(primarySources).run(args);
 	}
 
