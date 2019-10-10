@@ -73,6 +73,7 @@ public class AnnotationConfigServletWebApplicationContext extends GenericWebAppl
 	 * refreshed}.
 	 */
 	public AnnotationConfigServletWebApplicationContext() {
+		// 实例化 AnnotatedBeanDefinitionReader 的时候，会注册一些内置 bean
 		this.reader = new AnnotatedBeanDefinitionReader(this);
 		this.scanner = new ClassPathBeanDefinitionScanner(this);
 	}
