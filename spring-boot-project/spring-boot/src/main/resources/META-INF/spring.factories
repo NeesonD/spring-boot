@@ -1,9 +1,11 @@
-# PropertySource Loaders
+
+## key 是接口，value 是实现类集合
+# PropertySource Loaders 这里说明支持 properties 和 yaml 种类的文件。扩展点，自定义SourceLoader
 org.springframework.boot.env.PropertySourceLoader=\
 org.springframework.boot.env.PropertiesPropertySourceLoader,\
 org.springframework.boot.env.YamlPropertySourceLoader
 
-# Run Listeners
+# Run Listeners，这里很重要，是 springboot 特有的生命周期，生命周期每个阶段都是一个扩展点
 org.springframework.boot.SpringApplicationRunListener=\
 org.springframework.boot.context.event.EventPublishingRunListener
 

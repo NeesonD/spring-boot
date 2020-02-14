@@ -335,6 +335,7 @@ public class SpringApplication {
 		// 还记不记得在 new SpringApplication 的时候，也去 spring.factories 中获取相应类了
 		SpringApplicationRunListeners listeners = getRunListeners(args);
 		// 发送 ApplicationStartingEvent 事件
+		// 关于有哪些监听器可以查看 https://mubu.com/dockjKeP4URyL
 		listeners.starting();
 		try {
 			// 封装一下命令行参数
@@ -349,7 +350,7 @@ public class SpringApplication {
 			// 根据环境实例化一个 applicationContext，推断出使用哪种 ApplicationContext，一般是 AnnotationConfigServletWebServerApplicationContext
 			context = createApplicationContext();
 			// 从 spring.factories 文件获取 SpringBootExceptionReporter 对应的实例
-			// 也可以扩展
+			// 也可以扩展，可以自定义一个 reporter，当应用启动失败时，发一条消息出来
 			exceptionReporters = getSpringFactoriesInstances(SpringBootExceptionReporter.class,
 					new Class[] { ConfigurableApplicationContext.class }, context);
 			// 这一步注册 BeanDefinition，refresh 的前置
