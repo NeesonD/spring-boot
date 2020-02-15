@@ -33,7 +33,7 @@ import org.springframework.util.ReflectionUtils;
  * 应用启动生命周期变动事件发送
  * 生命周期这个概念用的非常广，netty 中也有生命周期，workflow 里面也有这种概念，然后在生命周期的每一个阶段触发一个事件，这样可以保证功能的可扩展性
  * 这个是非常值得学习的一种概念，思考一下能不能使用这种方法实现分布式事务
- * 步骤 + 事件
+ * 步骤 + 事件/钩子（扩展点）
  */
 class SpringApplicationRunListeners {
 

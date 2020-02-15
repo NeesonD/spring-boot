@@ -33,6 +33,8 @@ import org.springframework.core.io.support.SpringFactoriesLoader;
  * @author Andy Wilkinson
  * @since 1.0.0
  * 扩展容器生命周期中的行为，有一个默认的实现，主要是发送对应的事件
+ *
+ * 结合 TransactionSynchronization 一起看，通过 阶段 + 钩子 实现扩展
  */
 public interface SpringApplicationRunListener {
 
