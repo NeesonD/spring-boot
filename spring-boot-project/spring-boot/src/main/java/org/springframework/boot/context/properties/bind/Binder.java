@@ -210,7 +210,7 @@ public class Binder {
 	 * @return the binding result (never {@code null})
 	 */
 	public <T> BindResult<T> bind(ConfigurationPropertyName name, Bindable<T> target, BindHandler handler) {
-		// T 是真正想要的值，BindResult 相当于 BasicResponse，用来包装 T 的
+		// T 是真正想要的值，BindResult 是用来包装 T 的
 		T bound = bind(name, target, handler, false);
 		return BindResult.of(bound);
 	}

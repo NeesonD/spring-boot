@@ -313,6 +313,8 @@ public class SpringApplication {
 	 * 通过不同阶段的事件机制，可以很方便的扩展功能，比如说从配置中心拿配置（实现配置与代码的分离）
 	 * 启动成功之后，注册服务，并获取服务
 	 *
+	 * spring 启动过程比较长，预留的扩展点也有很多
+	 *
 	 * 核心：
 	 * 1. 生命周期 SpringApplicationRunListeners
 	 * 	  * 状态 -> 事件 -> 自定义处理器
@@ -342,12 +344,16 @@ public class SpringApplication {
 			ApplicationArguments applicationArguments = new DefaultApplicationArguments(args);
 			// 准备环境 , BootstrapApplicationListener 会启动 bootstrap 上下文
 			//============================ 核心1：准备各种属性 ConfigFileApplicationListener ==============================
+			// 这里应该要把所有的 key value 都找齐，这一步就是获取到了我们写在 properties key value 对
 			ConfigurableEnvironment environment = prepareEnvironment(listeners, applicationArguments);
 			// 配置需要忽略调的 beanInfo，暂时没想到有什么应用场景
 			configureIgnoreBeanInfo(environment);
 			// 打印启动图
 			Banner printedBanner = printBanner(environment);
 			// 根据环境实例化一个 applicationContext，推断出使用哪种 ApplicationContext，一般是 AnnotationConfigServletWebServerApplicationContext
+			// 这里主要看一下初始化的逻辑
+			// AnnotationConfigUtils.registerAnnotationConfigProcessors
+			//
 			context = createApplicationContext();
 			// 从 spring.factories 文件获取 SpringBootExceptionReporter 对应的实例
 			// 也可以扩展，可以自定义一个 reporter，当应用启动失败时，发一条消息出来
@@ -355,6 +361,7 @@ public class SpringApplication {
 					new Class[] { ConfigurableApplicationContext.class }, context);
 			// 这一步注册 BeanDefinition，refresh 的前置
 			//============================ 核心2：注册一部分 bean，一般是将主类注册成 bean，不过也可以传入 xml  ==============================
+			// 注意这种 before after 的用法，其实都是钩子，方便扩展用的
 			prepareContext(context, environment, listeners, applicationArguments, printedBanner);
 			// 重中之重 .G. 核心 这里是调用 applicationContext.refresh()
 			//============================ 核心3：调用 spring 的 refresh()，注册 bean，实例化 bean  ==============================
@@ -387,12 +394,19 @@ public class SpringApplication {
 		return context;
 	}
 
+	/**
+	 * Configuration 加载顺序： https://docs.spring.io/spring-boot/docs/2.2.4.RELEASE/reference/htmlsingle/#boot-features-external-config
+	 * @param listeners
+	 * @param applicationArguments
+	 * @return
+	 */
 	private ConfigurableEnvironment prepareEnvironment(SpringApplicationRunListeners listeners,
 			ApplicationArguments applicationArguments) {
 		// Create and configure the environment
 		// 这里判断是 SERVLET、REACTIVE 哪种环境
 		ConfigurableEnvironment environment = getOrCreateEnvironment();
 		// 配置环境，加载 profile 和 propertySource
+		// 1. 通过 applicationArguments 可知这里是从命令行获取 key value
 		configureEnvironment(environment, applicationArguments.getSourceArgs());
 		// 继续加载 propertySource
 		ConfigurationPropertySources.attach(environment);
@@ -558,8 +572,8 @@ public class SpringApplication {
 			// 类型转换
 			environment.setConversionService((ConfigurableConversionService) conversionService);
 		}
-		// 这里并没有获取 application.properties
 		configurePropertySources(environment, args);
+		// 激活的环境
 		configureProfiles(environment, args);
 	}
 
@@ -576,7 +590,7 @@ public class SpringApplication {
 		if (this.defaultProperties != null && !this.defaultProperties.isEmpty()) {
 			sources.addLast(new MapPropertySource("defaultProperties", this.defaultProperties));
 		}
-		// 将命令行中得配置放在第一位
+		// 将命令行中的配置放在第一位
 		if (this.addCommandLineProperties && args.length > 0) {
 			String name = CommandLinePropertySource.COMMAND_LINE_PROPERTY_SOURCE_NAME;
 			if (sources.contains(name)) {
