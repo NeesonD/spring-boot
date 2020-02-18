@@ -176,6 +176,9 @@ public class SpringApplication {
 	 */
 	private Set<Class<?>> primarySources;
 
+	/**
+	 * 一般就是 main 类
+	 */
 	private Set<String> sources = new LinkedHashSet<>();
 
 	/**
@@ -353,14 +356,13 @@ public class SpringApplication {
 			// 根据环境实例化一个 applicationContext，推断出使用哪种 ApplicationContext，一般是 AnnotationConfigServletWebServerApplicationContext
 			// 这里主要看一下初始化的逻辑
 			// AnnotationConfigUtils.registerAnnotationConfigProcessors
-			//
 			context = createApplicationContext();
 			// 从 spring.factories 文件获取 SpringBootExceptionReporter 对应的实例
 			// 也可以扩展，可以自定义一个 reporter，当应用启动失败时，发一条消息出来
 			exceptionReporters = getSpringFactoriesInstances(SpringBootExceptionReporter.class,
 					new Class[] { ConfigurableApplicationContext.class }, context);
-			// 这一步注册 BeanDefinition，refresh 的前置
 			//============================ 核心2：注册一部分 bean，一般是将主类注册成 bean，不过也可以传入 xml  ==============================
+			// 这一步注册 BeanDefinition，refresh 的前置
 			// 注意这种 before after 的用法，其实都是钩子，方便扩展用的
 			prepareContext(context, environment, listeners, applicationArguments, printedBanner);
 			// 重中之重 .G. 核心 这里是调用 applicationContext.refresh()
@@ -438,10 +440,12 @@ public class SpringApplication {
 	private void prepareContext(ConfigurableApplicationContext context, ConfigurableEnvironment environment,
 			SpringApplicationRunListeners listeners, ApplicationArguments applicationArguments, Banner printedBanner) {
 		context.setEnvironment(environment);
-		// 注册 beanNameGenerator，resourceLoader
+		// 注册 自定义的 beanNameGenerator，resourceLoader
+		// 扩展点
 		postProcessApplicationContext(context);
 		// 执行 ApplicationContextInitializer initialize，思考有哪些东西是要在这个阶段初始化的
 		// 还记不记得 new SpringApplication 的时候，从 spring.factories 中获取到了 ApplicationContextInitializer
+		// 扩展点
 		applyInitializers(context);
 		// contextPrepared 阶段
 		listeners.contextPrepared(context);
@@ -472,6 +476,7 @@ public class SpringApplication {
 		Set<Object> sources = getAllSources();
 		Assert.notEmpty(sources, "Sources must not be empty");
 		// 注册 多种类型的 BeanDefinition，一般就是将主类注册成 beanDefinition
+		// 这里也算一个扩展点，就是 sources 不是只有主类的时候
 		load(context, sources.toArray(new Object[0]));
 		// ApplicationPreparedEvent 事件
 		listeners.contextLoaded(context);

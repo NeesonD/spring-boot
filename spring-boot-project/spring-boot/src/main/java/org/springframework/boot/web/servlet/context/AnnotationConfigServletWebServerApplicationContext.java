@@ -70,7 +70,7 @@ public class AnnotationConfigServletWebServerApplicationContext extends ServletW
 	 * {@linkplain #refresh refreshed}.
 	 */
 	public AnnotationConfigServletWebServerApplicationContext() {
-		// 这里很重要
+		// 这里很重要，AnnotationConfigUtils 注册了很多内部 bean
 		this.reader = new AnnotatedBeanDefinitionReader(this);
 		this.scanner = new ClassPathBeanDefinitionScanner(this);
 	}
