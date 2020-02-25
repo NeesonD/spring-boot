@@ -319,13 +319,16 @@ public class SpringApplication {
 	 * spring 启动过程比较长，预留的扩展点也有很多
 	 *
 	 * 核心：
-	 * 1. 生命周期 SpringApplicationRunListeners
+	 * *1*. 生命周期 SpringApplicationRunListeners + 事件
 	 * 	  * 状态 -> 事件 -> 自定义处理器
 	 * 	  * 搞清楚每个状态对应哪些默认事件处理功能
 	 * 	  * 思考监听这些状态，我们可以自定义哪些功能
 	 * 	  	* environmentPrepared 从配置中心获取外部配置
 	 * 	    * running 之后获取注册中心服务，并将自己注册到服务中心
 	 * 	    * fail 启动失败的告警
+	 * 2. ConfigurableEnvironment 加载顺序，理解 PropertySources 和 PropertyResolver
+	 * 3. ApplicationContext 的初始化
+	 *
 	 */
 	public ConfigurableApplicationContext run(String... args) {
 		// 统计启动时间
@@ -338,6 +341,7 @@ public class SpringApplication {
 		// 也就是说 我们可以自定义一个 SpringApplicationRunListener 进行扩展
 		// 这里也能够体现，使用接口而不是实现
 		// 还记不记得在 new SpringApplication 的时候，也去 spring.factories 中获取相应类了
+		// 包装了 SpringApplicationRunListener，这个包装要学会。要不然下面就不是 listeners.starting() 这种简单写法了
 		SpringApplicationRunListeners listeners = getRunListeners(args);
 		// 发送 ApplicationStartingEvent 事件
 		// 关于有哪些监听器可以查看 https://mubu.com/dockjKeP4URyL
@@ -398,6 +402,7 @@ public class SpringApplication {
 
 	/**
 	 * Configuration 加载顺序： https://docs.spring.io/spring-boot/docs/2.2.4.RELEASE/reference/htmlsingle/#boot-features-external-config
+	 * 这里可以获取到很多 PropertySource，如果要自己实现一个按序获取配置信息的需求，可以借鉴下面的代码
 	 * @param listeners
 	 * @param applicationArguments
 	 * @return
@@ -406,6 +411,7 @@ public class SpringApplication {
 			ApplicationArguments applicationArguments) {
 		// Create and configure the environment
 		// 这里判断是 SERVLET、REACTIVE 哪种环境
+		// 可以做成一个静态工厂
 		ConfigurableEnvironment environment = getOrCreateEnvironment();
 		// 配置环境，加载 profile 和 propertySource
 		// 1. 通过 applicationArguments 可知这里是从命令行获取 key value
@@ -521,8 +527,11 @@ public class SpringApplication {
 	private <T> Collection<T> getSpringFactoriesInstances(Class<T> type, Class<?>[] parameterTypes, Object... args) {
 		ClassLoader classLoader = getClassLoader();
 		// Use names and ensure unique to protect against duplicates
+		// 自定义一个 CustomLoader
 		Set<String> names = new LinkedHashSet<>(SpringFactoriesLoader.loadFactoryNames(type, classLoader));
+		// 反射的应用
 		List<T> instances = createSpringFactoriesInstances(type, parameterTypes, classLoader, args, names);
+		// 封装和策略模式的运用，自定义一个 @CustomOrder
 		AnnotationAwareOrderComparator.sort(instances);
 		return instances;
 	}
@@ -666,6 +675,7 @@ public class SpringApplication {
 	 * class before falling back to a suitable default.
 	 * @return the application context (not yet refreshed)
 	 * @see #setApplicationContextClass(Class)
+	 * 反射 + 静态工厂
 	 */
 	protected ConfigurableApplicationContext createApplicationContext() {
 		Class<?> contextClass = this.applicationContextClass;
