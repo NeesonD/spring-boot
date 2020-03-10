@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.boot.context.config.ConfigFileApplicationListener;
 import org.springframework.core.env.PropertySource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
@@ -32,6 +33,9 @@ import org.springframework.core.io.support.PropertiesLoaderUtils;
  * @author Phillip Webb
  * @author Madhura Bhave
  * @since 1.0.0
+ * @see ConfigFileApplicationListener
+ * 加载 application.properties
+ * 可以自定义 PropertySourceLoader 解析 application.custom
  */
 public class PropertiesPropertySourceLoader implements PropertySourceLoader {
 

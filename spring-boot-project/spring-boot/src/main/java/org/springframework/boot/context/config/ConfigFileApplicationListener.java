@@ -181,7 +181,10 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 		}
 	}
 
-	// 加载 spring.factories 中的 EnvironmentPostProcessor
+	/**
+	 *	加载 spring.factories 中的 EnvironmentPostProcessor
+	 *  通过 扩展  EnvironmentPostProcessor 可以将 自定义 PropertySource 放到 Environment 中
+ 	 */
 	private void onApplicationEnvironmentPreparedEvent(ApplicationEnvironmentPreparedEvent event) {
 		List<EnvironmentPostProcessor> postProcessors = loadPostProcessors();
 		postProcessors.add(this);
