@@ -66,6 +66,12 @@ import org.springframework.util.StringUtils;
  * @author Andy Wilkinson
  * @since 1.0.0
  * @see SpringApplication
+ * 知识点1：使用 builder 模式构建复杂对象
+ * 知识点2：对象一般是由固定组件和可变组件构成的，固定组件应该在构造器里面封装起来，避免用户修改；
+ * 可变组件则可以暴露给用户，并提供相应的接口，规范用户扩展
+ * 构建复杂对象使用 builder 模式，注意思考一个对象中的可变组件和固定组件
+ * 可变组件通常可以定制化，通过 builder 来扩展，固定组件则是在构造器里面初始化的
+ * 防止用户修改
  */
 public class SpringApplicationBuilder {
 

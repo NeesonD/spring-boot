@@ -341,7 +341,7 @@ public class SpringApplication {
 		// 也就是说 我们可以自定义一个 SpringApplicationRunListener 进行扩展
 		// 这里也能够体现，使用接口而不是实现
 		// 还记不记得在 new SpringApplication 的时候，也去 spring.factories 中获取相应类了
-		// 包装了 SpringApplicationRunListener，这个包装要学会。要不然下面就不是 listeners.starting() 这种简单写法了
+		// SpringApplicationRunListeners 包装了 SpringApplicationRunListener，其实就是一个 holder(这种设计也很常见) 类，这个包装要学会。要不然下面就不是 listeners.starting() 这种简单写法了
 		SpringApplicationRunListeners listeners = getRunListeners(args);
 		// 发送 ApplicationStartingEvent 事件
 		// 关于有哪些监听器可以查看 https://mubu.com/dockjKeP4URyL
@@ -380,7 +380,6 @@ public class SpringApplication {
 //			}
 			// 发送 ApplicationStartedEvent 事件
 			listeners.started(context);
-			// TODO
 			callRunners(context, applicationArguments);
 		}
 		catch (Throwable ex) {
