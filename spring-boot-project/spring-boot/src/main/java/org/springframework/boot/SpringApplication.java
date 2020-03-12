@@ -197,7 +197,7 @@ public class SpringApplication {
 	private Banner banner;
 
 	/**
-	 * 加载 resource
+	 * 加载 resource，自定义 ResourceLoader
 	 */
 	private ResourceLoader resourceLoader;
 
@@ -213,12 +213,12 @@ public class SpringApplication {
 	private ConfigurableEnvironment environment;
 
 	/**
-	 * 容器
+	 * 容器 DEFAULT_SERVLET_WEB_CONTEXT_CLASS
 	 */
 	private Class<? extends ConfigurableApplicationContext> applicationContextClass;
 
 	/**
-	 * 应用类型
+	 * 应用类型  SERVLET
 	 */
 	private WebApplicationType webApplicationType;
 
@@ -331,9 +331,6 @@ public class SpringApplication {
 	 *
 	 */
 	public ConfigurableApplicationContext run(String... args) {
-		// 统计启动时间
-//		StopWatch stopWatch = new StopWatch();
-//		stopWatch.start();
 		ConfigurableApplicationContext context = null;
 		Collection<SpringBootExceptionReporter> exceptionReporters = new ArrayList<>();
 		configureHeadlessProperty();
@@ -374,10 +371,6 @@ public class SpringApplication {
 			refreshContext(context);
 			// 暂无实现，refresh 的后置
 			afterRefresh(context, applicationArguments);
-//			stopWatch.stop();
-//			if (this.logStartupInfo) {
-//				new StartupInfoLogger(this.mainApplicationClass).logStarted(getApplicationLog(), stopWatch);
-//			}
 			// 发送 ApplicationStartedEvent 事件
 			listeners.started(context);
 			callRunners(context, applicationArguments);
@@ -387,7 +380,6 @@ public class SpringApplication {
 			handleRunFailure(context, ex, exceptionReporters, listeners);
 			throw new IllegalStateException(ex);
 		}
-
 		try {
 			// 发送 ApplicationReadyEvent 事件
 			listeners.running(context);
@@ -454,10 +446,10 @@ public class SpringApplication {
 		applyInitializers(context);
 		// contextPrepared 阶段
 		listeners.contextPrepared(context);
-//		if (this.logStartupInfo) {
-//			logStartupInfo(context.getParent() == null);
-//			logStartupProfileInfo(context);
-//		}
+		if (this.logStartupInfo) {
+			logStartupInfo(context.getParent() == null);
+			logStartupProfileInfo(context);
+		}
 		// Add boot specific singleton beans
 		ConfigurableListableBeanFactory beanFactory = context.getBeanFactory();
 		// 将参数的包装对象注册成 bean
