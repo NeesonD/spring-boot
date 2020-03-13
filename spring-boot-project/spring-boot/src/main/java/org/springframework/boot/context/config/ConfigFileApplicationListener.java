@@ -472,6 +472,14 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 			});
 		}
 
+		/**
+		 * 加载很多种路径的
+		 * @param location
+		 * @param name
+		 * @param profile
+		 * @param filterFactory
+		 * @param consumer
+		 */
 		private void load(String location, String name, Profile profile, DocumentFilterFactory filterFactory,
 				DocumentConsumer consumer) {
 			if (!StringUtils.hasText(name)) {
@@ -501,6 +509,9 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 					.anyMatch((fileExtension) -> StringUtils.endsWithIgnoreCase(name, fileExtension));
 		}
 
+		/**
+		 * ResourceLoad -> Resource -> Document -> PropertySource -> PropertySources
+		 */
 		private void loadForFileExtension(PropertySourceLoader loader, String prefix, String fileExtension,
 				Profile profile, DocumentFilterFactory filterFactory, DocumentConsumer consumer) {
 			DocumentFilter defaultFilter = filterFactory.getDocumentFilter(null);
