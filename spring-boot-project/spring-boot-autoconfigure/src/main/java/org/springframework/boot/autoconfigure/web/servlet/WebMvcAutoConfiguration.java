@@ -392,6 +392,14 @@ public class WebMvcAutoConfiguration {
 			return super.createRequestMappingHandlerAdapter();
 		}
 
+		/**
+		 * RequestMappingHandlerMapping
+		 * @param mvcContentNegotiationManager
+		 * @param mvcConversionService
+		 * @param mvcResourceUrlProvider
+		 * @return
+		 * 统一处理所有的 bean，将 url 和 对应的方法关联起来
+		 */
 		@Bean
 		@Primary
 		@Override
